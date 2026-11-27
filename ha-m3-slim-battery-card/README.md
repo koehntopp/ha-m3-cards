@@ -12,7 +12,8 @@ of [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards).
 - **Discovery**: every `sensor.*` with device class battery and unit `%`, or
   only the ones listed in `entities`. Unavailable sensors are skipped.
 - **Names**: the device's name (many battery sensors are just called
-  "Battery"), without a trailing "Battery", "Batterie" or "Akku".
+  "Battery"), without a trailing "Battery", "Batterie" or "Akku" and without
+  a bracketed category at the end ("CUPRA Born (ELECTRIC_VEHICLES)").
 - **All fine**: one line "All batteries above 30 %", or the card hides itself
   with `hide_when_ok: true`.
 - Tap a battery for its details. Visual editor; English and German.

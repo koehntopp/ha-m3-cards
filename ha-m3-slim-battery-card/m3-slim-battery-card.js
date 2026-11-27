@@ -79,7 +79,9 @@ class M3SlimBatteryCard extends HTMLElement {
     const reg = this._hass.entities?.[id];
     const dev = this._hass.devices?.[reg?.device_id];
     const name = (dev?.name_by_user ?? dev?.name ?? st.attributes.friendly_name ?? id).trim();
-    return name.replace(/[\s\-–:·]*(battery|batterie|akku)(\s*(level|state|stand))?$/i, "").trim() || name;
+    // "CUPRA Born (ELECTRIC_VEHICLES)": drop a bracketed category at the end
+    return name.replace(/\s*\([^()]*\)$/, "")
+      .replace(/[\s\-–:·]*(battery|batterie|akku)(\s*(level|state|stand))?$/i, "").trim() || name;
   }
 
   _low() {
