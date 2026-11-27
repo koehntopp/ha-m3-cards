@@ -495,8 +495,10 @@ export class M3WasteCard extends TemplatedCard(LitElement) implements LovelaceCa
             ? this._renderTimeline(known, timelineDays)
             : nothing}
 
-          <div class="row-list">${visibleRows.map((s) => this._renderRow(s, next))}</div>
-          ${hiddenRows.length
+          ${this._config.show_list === false
+            ? nothing
+            : html`<div class="row-list">${visibleRows.map((s) => this._renderRow(s, next))}</div>`}
+          ${this._config.show_list !== false && hiddenRows.length
             ? html`<button class="collapse-toggle" @click=${() => (this._expanded = !this._expanded)}>
                   <span>${this._expanded ? this._t("waste_collapse") : this._t("waste_expand").replace("{n}", String(hiddenRows.length))}</span>
                   <ha-icon class="chevron ${this._expanded ? "open" : ""}" icon="mdi:chevron-down"></ha-icon>

@@ -1881,6 +1881,7 @@ const defaultTranslations = {
     editor_waste_icon_multi: "Mehrere (überlappend)",
     editor_waste_show_timeline: "Zeitleiste zeigen",
     editor_waste_timeline_days: "Zeitleisten-Tage",
+    editor_waste_show_list: "Liste der Tonnen zeigen",
     editor_waste_max_rows: "Sofort sichtbare Abholungen",
     editor_waste_notify: "Benachrichtigung",
     editor_waste_notify_hint:
@@ -5569,6 +5570,7 @@ const defaultTranslations = {
     editor_waste_icon_multi: "Multiple (overlapping)",
     editor_waste_show_timeline: "Show timeline",
     editor_waste_timeline_days: "Timeline days",
+    editor_waste_show_list: "Show the list of bins",
     editor_waste_max_rows: "Collections shown at once",
     editor_waste_notify: "Notification",
     editor_waste_notify_hint:

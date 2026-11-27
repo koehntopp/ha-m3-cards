@@ -1644,6 +1644,7 @@ const uk: CustomTranslations = {
   editor_waste_icon_multi: "Кілька (перекриття)",
   editor_waste_show_timeline: "Показати часову шкалу",
   editor_waste_timeline_days: "Хронологічні дні",
+  editor_waste_show_list: "Показати список контейнерів",
   editor_waste_max_rows: "Колекції показані одразу",
   editor_waste_notify: "Сповіщення",
   editor_waste_notify_hint: "Надсилає push-повідомлення під час нагадування, коли смітник має бути завантажений протягом запланованого часу. Корисно лише в режимі нагадування.",

@@ -146,6 +146,7 @@ export class M3WasteCardEditor extends LitElement implements LovelaceCardEditor 
       },
       { name: "show_timeline", selector: { boolean: {} } },
       { name: "timeline_days", selector: { number: { min: 7, max: 28, mode: "box", unit_of_measurement: "d" } } },
+      { name: "show_list", selector: { boolean: {} } },
       { name: "max_visible", selector: { number: { min: 0, max: 20, mode: "box" } } },
     ];
   }
@@ -318,6 +319,7 @@ export class M3WasteCardEditor extends LitElement implements LovelaceCardEditor 
       hero_icon: "editor_waste_hero_icon",
       show_timeline: "editor_waste_show_timeline",
       timeline_days: "editor_waste_timeline_days",
+      show_list: "editor_waste_show_list",
       max_visible: "editor_waste_max_rows",
       animation: "editor_progress_animation",
       glass_background: "editor_glass_background",
@@ -413,6 +415,7 @@ export class M3WasteCardEditor extends LitElement implements LovelaceCardEditor 
       hero_icon: this._config.hero_icon ?? "first",
       show_timeline: this._config.show_timeline ?? true,
       timeline_days: this._config.timeline_days ?? 14,
+      show_list: this._config.show_list ?? true,
       max_visible: this._config.max_visible ?? this._config.max_rows ?? 0,
     };
 

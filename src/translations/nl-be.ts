@@ -1682,6 +1682,7 @@ const nlBe: CustomTranslations = {
   editor_waste_icon_multi: "Meerdere (overlappend)",
   editor_waste_show_timeline: "Tijdlijn tonen",
   editor_waste_timeline_days: "Dagen in tijdlijn",
+  editor_waste_show_list: "Lijst van de containers tonen",
   editor_waste_max_rows: "Ophalingen tegelijk getoond",
   editor_waste_notify: "Melding",
   editor_waste_notify_hint: "Stuurt een pushbericht op de herinneringstijd wanneer een ophaling binnen de voorlooptijd valt. Alleen nuttig in herinneringsmodus.",

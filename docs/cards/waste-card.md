@@ -71,6 +71,7 @@ bin alone — a pill that only ever shows the paper — give it just that one.
 | `hero_primary` | `days` \| `weekday` \| `date` | `days` | What leads: "in 3 days", "Monday" or "10 Dec" — in the hero and in the compact sizes, where the other goes underneath. Today and tomorrow stay words |
 | `hero_icon` | `first` \| `multi` | `first` | Single icon or overlapping bin icons |
 | `show_timeline` | boolean | `true` | Two-week timeline |
+| `show_list` | boolean | `true` | A row per bin under the hero and timeline. `false` keeps only the next collection and the timeline; `max_visible` then does nothing |
 | `timeline_days` | number | `14` | Timeline span (7–28) |
 | `max_visible` | number | `0` | Rows shown at once, the rest behind "show more" (0 = all), as on the other list cards. `max_rows`, the old name, still works. |
 | `reminder_offset` | number | `1` | Days before pickup to start reminding (reminder mode) |

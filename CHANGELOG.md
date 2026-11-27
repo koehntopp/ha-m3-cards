@@ -4,6 +4,14 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 Versionierung folgt [SemVer](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Added
+
+- **Waste card: `show_list`.** `false` drops the row per bin (and the "show
+  more" toggle under it), so the full card is the next collection and the
+  timeline alone — what a card-mod rule had to do until now.
+
 ## [2.12.0] – 2026-11-27
 
 ### Added

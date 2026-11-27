@@ -2531,6 +2531,9 @@ export interface M3WasteCardConfig extends NotifyConfigBase, DetailModeConfig {
   layout?: "full" | "row" | "tile" | "pill";
   show_timeline?: boolean;
   timeline_days?: number;
+  /** A row per bin under the hero and timeline. `false` leaves the next
+   *  collection and the timeline alone. @default true */
+  show_list?: boolean;
   /** Rows shown at once, the rest behind "show more"; 0 = all. The name the
    *  other list cards use. */
   max_visible?: number;
