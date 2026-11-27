@@ -3,10 +3,13 @@
 Material 3–style custom cards for Home Assistant dashboards, in one repository.
 Each card lives in its own folder with its own docs, screenshots and source.
 
-| Card | Folder | Type | Resource file |
-|---|---|---|---|
-| [M3 Weather Card Week](#m3-weather-card-week) | [`m3-weather-card-week/`](m3-weather-card-week/) | `custom:m3-weather-card-week` | `m3-cards.js` (TypeScript + Lit, built) |
-| [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3energy/`](ha-m3energy/) | `custom:m3-slim-energy-card` | `m3-slim-energy-card.js` (plain JS, no build) |
+| Card | Folder | Type |
+|---|---|---|
+| [M3 Weather Card Week](#m3-weather-card-week) | [`m3-weather-card-week/`](m3-weather-card-week/) | `custom:m3-weather-card-week` |
+| [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3energy/`](ha-m3energy/) | `custom:m3-slim-energy-card` |
+
+All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
+resource.
 
 Both follow the design language of [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards)
 (MIT): 28px card radius, frosted surface, squircle icon wells, the m3 palette.
@@ -14,30 +17,40 @@ They work in light and dark themes.
 
 ## Installation
 
-The cards are installed as dashboard resources. Download the files from the
-[latest release](../../releases/latest), or build them from this repository.
+### HACS (recommended)
 
-1. Copy the file to `config/www/` on your Home Assistant:
-   - weather: `m3-cards.js`
-   - energy: `m3-slim-energy-card.js`
-2. *Settings → Dashboards → ⋮ → Resources → Add resource*, URL
-   `/local/m3-cards.js` (or `/local/m3-slim-energy-card.js`), type
-   *JavaScript module*. One resource per card.
-3. Reload the browser, then add the card from the card picker or in YAML.
+[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=koehntopp&repository=ha-m3-cards&category=plugin)
 
-After an update, replace the file and reload the browser (clear the cache if
-the old version sticks; appending `?v=2` to the resource URL forces it).
+The repository is not in the default HACS store, so add it once as a custom
+repository:
+
+1. HACS → menu (⋮) top right → *Custom repositories*
+2. URL `https://github.com/koehntopp/ha-m3-cards`, type **Dashboard** → *Add*
+3. Search for "HA M3 Cards", open it, *Download*
+4. Reload the browser
+
+HACS registers the resource `/hacsfiles/ha-m3-cards/ha-m3-cards.js` itself.
+If you had `m3-cards.js` or `m3-slim-energy-card.js` from the old
+repositories as resources, remove them: the cards would be defined twice.
+
+### Manual
+
+1. Download `ha-m3-cards.js` from the [latest release](../../releases/latest)
+2. Copy it to `config/www/ha-m3-cards.js`
+3. *Settings → Dashboards → ⋮ → Resources → Add resource*, URL
+   `/local/ha-m3-cards.js`, type *JavaScript module*
+4. Reload the browser
 
 ### Building from source
 
 ```bash
-# weather card → m3-weather-card-week/dist/m3-cards.js
-cd m3-weather-card-week
-npm ci
-npm run build
-
-# energy card: nothing to build, use ha-m3energy/m3-slim-energy-card.js as is
+./scripts/build.sh    # → dist/ha-m3-cards.js
 ```
+
+It builds the weather card (`m3-weather-card-week/`, TypeScript + Lit, needs
+Node 20+) and appends the energy card (`ha-m3energy/m3-slim-energy-card.js`,
+plain JS). Publishing a GitHub release runs the same script and attaches the
+file to the release.
 
 ## M3 Weather Card Week
 
@@ -66,8 +79,7 @@ sensors:                     # optional
   low: sensor.garden_temp_min
 ```
 
-The bundle is a fork of j0sp0r/m3-cards with this card added; it also registers
-the upstream M3 cards. Full options, colours and development notes:
+Full options, colours and development notes:
 [`m3-weather-card-week/README.md`](m3-weather-card-week/README.md).
 
 ## M3 Slim Energy Card

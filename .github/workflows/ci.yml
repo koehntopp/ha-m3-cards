@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: m3-weather-card-week
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: m3-weather-card-week/package-lock.json
+      - run: npm ci
+      - name: Type-check
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Build bundle
+        working-directory: .
+        run: ./scripts/build.sh
