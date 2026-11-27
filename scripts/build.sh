@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds dist/ha-m3-cards.js: the weather bundle (ES module) followed by the
-# energy and trash cards. Those are plain scripts with top-level consts, so
+# energy, trash and battery cards. Those are plain scripts with top-level consts, so
 # each goes in a block to keep its names out of the module scope.
 set -e
 cd "$(dirname "$0")/.."
@@ -12,6 +12,8 @@ mkdir -p dist
   cat ha-m3-slim-energy-card/m3-slim-energy-card.js
   printf '\n}\n{\n'
   cat ha-m3-slim-trash-card/m3-slim-trash-card.js
+  printf '\n}\n{\n'
+  cat ha-m3-slim-battery-card/m3-slim-battery-card.js
   printf '\n}\n'
 } > dist/ha-m3-cards.js
 echo "dist/ha-m3-cards.js: $(wc -c < dist/ha-m3-cards.js) bytes"

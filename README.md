@@ -8,6 +8,7 @@ Each card lives in its own folder with its own docs, screenshots and source.
 | [M3 Slim Weekly Weather](#m3-slim-weekly-weather) | [`ha-m3-slim-weekly-weather/`](ha-m3-slim-weekly-weather/) | `custom:m3-weather-card-week` |
 | [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3-slim-energy-card/`](ha-m3-slim-energy-card/) | `custom:m3-slim-energy-card` |
 | [M3 Slim Trash Card](#m3-slim-trash-card) | [`ha-m3-slim-trash-card/`](ha-m3-slim-trash-card/) | `custom:m3-slim-trash-card` |
+| [M3 Slim Battery Card](#m3-slim-battery-card) | [`ha-m3-slim-battery-card/`](ha-m3-slim-battery-card/) | `custom:m3-slim-battery-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
@@ -49,7 +50,7 @@ repositories as resources, remove them: the cards would be defined twice.
 ```
 
 It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
-Node 20+) and appends the energy and trash cards (plain JS, no build).
+Node 20+) and appends the energy, trash and battery cards (plain JS, no build).
 Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
@@ -149,6 +150,26 @@ entities:
 ```
 
 All options: [`ha-m3-slim-trash-card/README.md`](ha-m3-slim-trash-card/README.md).
+
+## M3 Slim Battery Card
+
+The weakest batteries below a threshold, in one row.
+
+![Battery card](ha-m3-slim-battery-card/docs/card.png)
+
+- Up to five batteries (configurable), lowest first: icon, level and name.
+- Yellow below `threshold` (30 %), red at or below `critical` (15 %).
+- Finds every sensor with device class battery; names come from the device.
+- Nothing low: one line "All batteries above 30 %", or `hide_when_ok: true`.
+
+```yaml
+type: custom:m3-slim-battery-card
+threshold: 30
+critical: 15
+count: 5
+```
+
+All options: [`ha-m3-slim-battery-card/README.md`](ha-m3-slim-battery-card/README.md).
 
 ## History
 
