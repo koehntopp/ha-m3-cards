@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif; min-height: 100vh; background: #1f2230;
+         --primary-text-color: #e3e6f0; --card-background-color: #2b2e3d; --secondary-text-color: #9aa0b4; }
+  ha-icon { display: inline-flex; }
+  h4 { margin: 20px 0 8px; color: var(--secondary-text-color); font-weight: 400; font-size: 13px; }
+  .col { width: 520px; }
+  body.shot { padding: 0; background: #1f2230; }
+  body.shot h4, body.shot section:not(:first-child) { display: none; }
+</style>
+<div class="col">
+  <section><h4>Default: weekday leads (hero_primary: weekday)</h4><m3-slim-trash-card id="a"></m3-slim-trash-card></section>
+  <section><h4>Tomorrow, two bins, hero_icon: multi, German</h4><m3-slim-trash-card id="b"></m3-slim-trash-card></section>
+  <section><h4>hero_primary: days, timeline_days: 28</h4><m3-slim-trash-card id="c"></m3-slim-trash-card></section>
+</div>
+<script>
+  // ha-icon mock: MDI webfont (HA ships its own); the CSS does not cross into the shadow root
+  customElements.define("ha-icon", class extends HTMLElement {
+    connectedCallback() {
+      const r = this.getRootNode();
+      if (r !== document && !r.querySelector("link[data-mdi]")) {
+        const l = document.createElement("link");
+        l.rel = "stylesheet"; l.href = document.querySelector("link").href; l.setAttribute("data-mdi", "");
+        r.prepend(l);
+      }
+      this.innerHTML = `<i class="mdi mdi-${this.getAttribute("icon").slice(4)}"></i>`;
+    }
+  });
+  if (location.search.includes("shot")) document.body.classList.add("shot");
+</script>
+<script src="m3-slim-trash-card.js"></script>
+<script>
+  const inDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const s = (id, name, state) => [id, { entity_id: id, state: String(state), attributes: { friendly_name: name } }];
+  const week = Object.fromEntries([
+    s("sensor.bio", "Musterstraße 1 Bioabfall", 6),
+    s("sensor.rest", "Musterstraße 1 Restmüll", 14),
+    s("sensor.gelb", "Musterstraße 1 Gelber Sack", inDays(14)),
+    s("sensor.papier", "Musterstraße 1 Papier", 14),
+    s("sensor.glas", "Musterstraße 1 Glas", 20),
+  ]);
+  const soon = { ...week, ...Object.fromEntries([s("sensor.bio", "Bioabfall", 1), s("sensor.papier", "Papier", 1)]) };
+  const devices = { addr: { name: "Musterstraße 1" } };
+  const entities = Object.fromEntries(Object.keys(week).map((id) => [id, { device_id: "addr" }]));
+  const hass = (states, language = "en") => ({ states, devices, entities, language, locale: { language } });
+  const ids = ["sensor.bio", "sensor.rest", "sensor.gelb", "sensor.papier", "sensor.glas"];
+  const mount = (id, config, h) => { const el = document.getElementById(id); el.setConfig(config); el.hass = h; };
+  mount("a", { entities: ids }, hass(week));
+  mount("b", { entities: ids, hero_icon: "multi" }, hass(soon, "de"));
+  mount("c", { entities: ids, hero_primary: "days", timeline_days: 28 }, hass(week));
+</script>

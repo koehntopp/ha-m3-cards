@@ -7,11 +7,12 @@ Each card lives in its own folder with its own docs, screenshots and source.
 |---|---|---|
 | [M3 Slim Weekly Weather](#m3-slim-weekly-weather) | [`ha-m3-slim-weekly-weather/`](ha-m3-slim-weekly-weather/) | `custom:m3-weather-card-week` |
 | [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3-slim-energy-card/`](ha-m3-slim-energy-card/) | `custom:m3-slim-energy-card` |
+| [M3 Slim Trash Card](#m3-slim-trash-card) | [`ha-m3-slim-trash-card/`](ha-m3-slim-trash-card/) | `custom:m3-slim-trash-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
 
-Both follow the design language of [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards)
+All follow the design language of [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards)
 (MIT): 28px card radius, frosted surface, squircle icon wells, the m3 palette.
 They work in light and dark themes.
 
@@ -48,8 +49,8 @@ repositories as resources, remove them: the cards would be defined twice.
 ```
 
 It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
-Node 20+) and appends the energy card (`ha-m3-slim-energy-card/m3-slim-energy-card.js`,
-plain JS). Publishing a GitHub release runs the same script and attaches the
+Node 20+) and appends the energy and trash cards (plain JS, no build).
+Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
 ## M3 Slim Weekly Weather
@@ -124,6 +125,29 @@ entities:
 
 All device options and migration notes from `slim-energy-card`:
 [`ha-m3-slim-energy-card/README.md`](ha-m3-slim-energy-card/README.md).
+
+## M3 Slim Trash Card
+
+The next bin collection and a timeline of the coming two weeks.
+
+![Trash card](ha-m3-slim-trash-card/docs/card.png)
+
+- Hero with the next pickup: weekday (or days, or date), bin name, today and
+  tomorrow as words; bins on the same day are named together.
+- Timeline with one marker per bin, same-day bins stacked, 7–28 days.
+- Sensors give days until collection or the date itself (e.g. Waste
+  Collection Schedule). Icons and colours follow the bin's name.
+
+```yaml
+type: custom:m3-slim-trash-card
+entities:
+  - sensor.bioabfall
+  - sensor.restmuell
+  - sensor.gelber_sack
+  - sensor.papier
+```
+
+All options: [`ha-m3-slim-trash-card/README.md`](ha-m3-slim-trash-card/README.md).
 
 ## History
 
