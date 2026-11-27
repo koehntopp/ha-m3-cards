@@ -3,7 +3,11 @@
 // forecast below is made up.
 
 import "./ha-shim.js";
-await import("../dist/m3-cards.js");
+
+// The released bundle sits next to the page on GitHub Pages; working in the
+// repository, the page takes the local build.
+const onPages = location.hostname.endsWith("github.io");
+await import(onPages ? "./m3-cards.js" : "../dist/m3-cards.js");
 
 const params = new URLSearchParams(location.search);
 const language = params.get("lang") ?? "en";
