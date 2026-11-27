@@ -1,7 +1,7 @@
 // M3 Slim Open Windows Card: the open windows in one row, longest open first.
 // Each slot shows an icon, how long it has been open and the name; yellow while
-// open, red once open longer than `alert_after` minutes. Windows are found by
-// device_class (window by default), or listed explicitly.
+// open, red once open longer than `alert_after` minutes. Windows and doors are
+// found by device_class, or listed explicitly.
 
 const YELLOW = "#f0c46e";
 const RED = "#e57373";
@@ -9,11 +9,11 @@ const GREEN = "#81c784";
 const ICONS = { door: "mdi:door-open", garage_door: "mdi:garage-open", opening: "mdi:square-rounded-outline" };
 const WINDOW_ICON = "mdi:window-open-variant";
 // words dropped from names: vendors and what the sensor is ("Shelly Fensterkontakt Bad Window" → "Bad")
-const NOISE = /\b(shelly|aqara|xiaomi|hue|ikea|tuya|sonoff|homematic|eve|fensterkontakte?|fenster|window|kontakt|contact|sensor|opening)\b/gi;
+const NOISE = /\b(shelly|aqara|xiaomi|hue|ikea|tuya|sonoff|homematic|eve|fensterkontakte?|fenster|window|door|kontakt|contact|sensor|opening)\b/gi;
 
 const STRINGS = {
-  en: { closed: "All windows closed", now: "now", day: "d" },
-  de: { closed: "Alle Fenster geschlossen", now: "gerade", day: "T" },
+  en: { closed: "All windows and doors closed", now: "now", day: "d" },
+  de: { closed: "Alle Fenster und Türen geschlossen", now: "gerade", day: "T" },
 };
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -110,7 +110,7 @@ class M3SlimOpenWindowsCard extends HTMLElement {
 
   _open() {
     const states = this._hass.states;
-    const classes = this._config.device_classes?.length ? this._config.device_classes : ["window"];
+    const classes = this._config.device_classes?.length ? this._config.device_classes : ["window", "door"];
     const exclude = (this._config.exclude ?? []).map(matcher);
     const ids = this._config.entities?.length
       ? this._config.entities
@@ -174,7 +174,7 @@ class M3SlimOpenWindowsCardEditor extends HTMLElement {
       this._form.computeLabel = (s) => ({
         alert_after: "Red after (minutes open)",
         count: "Windows in the row",
-        device_classes: "Sensor types (default: window)",
+        device_classes: "Sensor types (default: window, door)",
         entities: "Only these sensors (empty: all of the types above)",
         exclude: "Never show",
         exclude_patterns: "Never show, by pattern (* is a wildcard: binary_sensor.garage_*, *_tuer_*)",
@@ -224,6 +224,6 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "m3-slim-open-windows-card",
   name: "M3 Slim Open Windows Card",
-  description: "Material 3 row of open windows: name and how long each has been open",
+  description: "Material 3 row of open windows and doors: name and how long each has been open",
   preview: true,
 });

@@ -11,7 +11,7 @@
   body.shot h4, body.shot section:not(:first-child) { display: none; }
 </style>
 <div class="col">
-  <section><h4>Default: window sensors, red after 30 min</h4><m3-slim-open-windows-card id="a"></m3-slim-open-windows-card></section>
+  <section><h4>Default: windows and doors, red after 30 min</h4><m3-slim-open-windows-card id="a"></m3-slim-open-windows-card></section>
   <section><h4>Two open, German</h4><m3-slim-open-windows-card id="b"></m3-slim-open-windows-card></section>
   <section><h4>Everything closed</h4><m3-slim-open-windows-card id="c"></m3-slim-open-windows-card></section>
 </div>
@@ -34,16 +34,16 @@
 <script>
   const devices = {}, entities = {};
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
-  const win = (id, device, open, minutes = 0) => {
+  const win = (id, device, open, minutes = 0, cls = "window") => {
     devices[id] = { name: device }; entities[`binary_sensor.${id}`] = { device_id: id };
     return [`binary_sensor.${id}`, { entity_id: `binary_sensor.${id}`, state: open ? "on" : "off", last_changed: ago(minutes),
-      attributes: { friendly_name: "Window", device_class: "window" } }];
+      attributes: { friendly_name: cls === "door" ? "Door" : "Window", device_class: cls } }];
   };
   const all = Object.fromEntries([
     win("bad", "Shelly Fensterkontakt Bad", true, 135),
     win("kueche", "Shelly Fensterkontakt Küche", true, 42),
     win("az_li", "Shelly Fensterkontakt AZ LI", true, 18),
-    win("mara", "Shelly Fensterkontakt Mara", true, 3),
+    win("haustuer", "Haustür", true, 3, "door"),
     win("terrasse", "Shelly Fensterkontakt Terrasse", true, 0),
     win("toilette", "Shelly Fensterkontakt Toilette", false),
   ]);
@@ -51,6 +51,6 @@
   const pick = (...ids) => Object.fromEntries(ids.map((id) => [id, all[id]]));
   const mount = (id, config, h) => { const el = document.getElementById(id); el.setConfig(config); el.hass = h; };
   mount("a", {}, hass(all));
-  mount("b", {}, hass(pick("binary_sensor.kueche", "binary_sensor.mara", "binary_sensor.toilette"), "de"));
+  mount("b", {}, hass(pick("binary_sensor.kueche", "binary_sensor.haustuer", "binary_sensor.toilette"), "de"));
   mount("c", {}, hass(pick("binary_sensor.toilette")));
 </script>

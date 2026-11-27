@@ -176,16 +176,16 @@ All options: [`ha-m3-slim-battery-card/README.md`](ha-m3-slim-battery-card/READM
 
 ## M3 Slim Open Windows Card
 
-The open windows in one row, with how long each has been open.
+The open windows and doors in one row, with how long each has been open.
 
 ![Open windows card](ha-m3-slim-open-windows/docs/card.png)
 
-- Up to five windows (configurable), longest open first: icon, time open
+- Up to five (configurable), longest open first: icon, time open
   and name.
 - Yellow while open, red after `alert_after` minutes (30).
-- Finds window sensors by device class (doors and garage doors optional);
+- Finds window and door sensors by device class (garage doors optional);
   names come from the device without vendor and "Fensterkontakt"/"Window".
-- Everything closed: one line "All windows closed", or `hide_when_ok: true`.
+- Everything closed: one line "All windows and doors closed", or `hide_when_ok: true`.
 
 ```yaml
 type: custom:m3-slim-open-windows-card
