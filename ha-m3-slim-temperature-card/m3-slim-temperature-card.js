@@ -45,22 +45,24 @@ const CSS = `
     color: var(--primary-text-color);
   }
   .row { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 6px; }
-  /* same height as the energy card's tiles (68px): name, temperature and humidity */
-  .t { box-sizing: border-box; height: 68px; padding: 6px 10px; gap: 2px; border-radius: 18px; overflow: hidden;
+  /* as tall as the energy card's tiles (68px): name, temperature and humidity. Text sizes follow the
+     tile's width (cqi), so four tiles fit a phone; min-height lets the tile grow under the OS text zoom */
+  .t { box-sizing: border-box; min-height: 68px; padding: 6px 8px; gap: 2px; border-radius: 18px; overflow: hidden;
+       container-type: inline-size;
        display: flex; flex-direction: column; justify-content: center; cursor: pointer;
        background: color-mix(in srgb, var(--c) 12%, var(--m3-item));
        transition: border-radius .35s cubic-bezier(.2, 0, 0, 1); }
   .t:active { border-radius: 11px; }
   .t.na { opacity: .4; }
   .ink { color: color-mix(in srgb, var(--c) 85%, var(--primary-text-color)); }
-  .hd { display: flex; align-items: center; gap: 4px; min-width: 0; line-height: 13px; }
+  .hd { display: flex; align-items: center; gap: 4px; min-width: 0; line-height: 1.3; }
   .hd ha-icon { --mdc-icon-size: 12px; font-size: 12px; flex: none; display: inline-flex; }
-  .nm { font-size: 10px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tp { display: flex; align-items: baseline; gap: 1px; line-height: 23px; white-space: nowrap; }
-  .v { font-size: 20px; font-weight: 700; font-feature-settings: "tnum"; }
-  .u { font-size: 11px; font-weight: 500; }
+  .nm { font-size: clamp(9px, 11cqi, 10px); opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp { display: flex; align-items: baseline; gap: 1px; line-height: 1.15; white-space: nowrap; }
+  .v { font-size: clamp(14px, 21cqi, 20px); font-weight: 700; font-feature-settings: "tnum"; }
+  .u { font-size: clamp(9px, 12cqi, 11px); font-weight: 500; }
   .tr { --mdc-icon-size: 12px; font-size: 12px; opacity: .8; margin-left: 2px; align-self: center; display: inline-flex; }
-  .hu { display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 500; line-height: 13px; white-space: nowrap; }
+  .hu { display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 500; line-height: 1.3; white-space: nowrap; }
   .hu ha-icon { --mdc-icon-size: 10px; font-size: 10px; display: inline-flex; }
 `;
 
