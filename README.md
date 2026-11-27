@@ -9,6 +9,7 @@ Each card lives in its own folder with its own docs, screenshots and source.
 | [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3-slim-energy-card/`](ha-m3-slim-energy-card/) | `custom:m3-slim-energy-card` |
 | [M3 Slim Trash Card](#m3-slim-trash-card) | [`ha-m3-slim-trash-card/`](ha-m3-slim-trash-card/) | `custom:m3-slim-trash-card` |
 | [M3 Slim Battery Card](#m3-slim-battery-card) | [`ha-m3-slim-battery-card/`](ha-m3-slim-battery-card/) | `custom:m3-slim-battery-card` |
+| [M3 Slim Open Windows Card](#m3-slim-open-windows-card) | [`ha-m3-slim-open-windows/`](ha-m3-slim-open-windows/) | `custom:m3-slim-open-windows-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
@@ -50,7 +51,7 @@ repositories as resources, remove them: the cards would be defined twice.
 ```
 
 It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
-Node 20+) and appends the energy, trash and battery cards (plain JS, no build).
+Node 20+) and appends the energy, trash, battery and open-windows cards (plain JS, no build).
 Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
@@ -172,6 +173,27 @@ exclude:
 ```
 
 All options: [`ha-m3-slim-battery-card/README.md`](ha-m3-slim-battery-card/README.md).
+
+## M3 Slim Open Windows Card
+
+The open windows in one row, with how long each has been open.
+
+![Open windows card](ha-m3-slim-open-windows/docs/card.png)
+
+- Up to five windows (configurable), longest open first: icon, time open
+  and name.
+- Yellow while open, red after `alert_after` minutes (30).
+- Finds window sensors by device class (doors and garage doors optional);
+  names come from the device without vendor and "Fensterkontakt"/"Window".
+- Everything closed: one line "All windows closed", or `hide_when_ok: true`.
+
+```yaml
+type: custom:m3-slim-open-windows-card
+alert_after: 30
+count: 5
+```
+
+All options: [`ha-m3-slim-open-windows/README.md`](ha-m3-slim-open-windows/README.md).
 
 ## History
 
