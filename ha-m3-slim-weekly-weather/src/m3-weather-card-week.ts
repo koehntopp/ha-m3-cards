@@ -528,8 +528,10 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
                     </span>
                   `
                 : nothing}
-              <span class="strip-high">${this._hasNumber(high) ? `${this._formatNumber(high)}°` : "–"}</span>
-              <span class="strip-low">${this._hasNumber(low) ? `${this._formatNumber(low)}°` : "–"}</span>
+              <span class="strip-temps">
+                <span class="strip-high">${this._hasNumber(high) ? `${this._formatNumber(high)}°` : "–"}</span>
+                <span class="strip-low">${this._hasNumber(low) ? `${this._formatNumber(low)}°` : "–"}</span>
+              </span>
             </div>
           `;
         })}
@@ -750,6 +752,14 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
       .strip-pop ha-icon {
         --mdc-icon-size: 11px;
         opacity: 0.85;
+      }
+
+      /* high and low on one line; on a narrow card they stack again */
+      .strip-temps {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        white-space: nowrap;
       }
 
       .strip-high {
@@ -992,6 +1002,11 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
         }
         .strip-pop {
           display: none;
+        }
+        .strip-temps {
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
         }
       }
 
