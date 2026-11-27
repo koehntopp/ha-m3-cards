@@ -10,6 +10,7 @@ Each card lives in its own folder with its own docs, screenshots and source.
 | [M3 Slim Trash Card](#m3-slim-trash-card) | [`ha-m3-slim-trash-card/`](ha-m3-slim-trash-card/) | `custom:m3-slim-trash-card` |
 | [M3 Slim Battery Card](#m3-slim-battery-card) | [`ha-m3-slim-battery-card/`](ha-m3-slim-battery-card/) | `custom:m3-slim-battery-card` |
 | [M3 Slim Open Windows Card](#m3-slim-open-windows-card) | [`ha-m3-slim-open-windows/`](ha-m3-slim-open-windows/) | `custom:m3-slim-open-windows-card` |
+| [M3 Slim Temperature Card](#m3-slim-temperature-card) | [`ha-m3-slim-temperature-card/`](ha-m3-slim-temperature-card/) | `custom:m3-slim-temperature-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
@@ -51,7 +52,7 @@ repositories as resources, remove them: the cards would be defined twice.
 ```
 
 It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
-Node 20+) and appends the energy, trash, battery and open-windows cards (plain JS, no build).
+Node 20+) and appends the energy, trash, battery, open-windows and temperature cards (plain JS, no build).
 Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
@@ -194,6 +195,31 @@ count: 5
 ```
 
 All options: [`ha-m3-slim-open-windows/README.md`](ha-m3-slim-open-windows/README.md).
+
+## M3 Slim Temperature Card
+
+Room temperatures as slim tiles, as tall as the energy card's.
+
+![Temperature card](ha-m3-slim-temperature-card/docs/card.png)
+
+- Tiles with name, temperature, trend arrow and humidity; coloured like the
+  m3 climate overview (blue cold, green comfortable, red hot).
+- Four tiles to a row; a `separator` entry ends the row, so rows hold one to
+  four tiles of the same width.
+- `outdoor: true` colours a tile on the weather scale. Humidity outside
+  35–65 % shows orange; names and icons come from the area.
+
+```yaml
+type: custom:m3-slim-temperature-card
+entities:
+  - entity: sensor.outdoor_temperature
+    outdoor: true
+  - sensor.kitchen_temperature
+  - separator
+  - sensor.bathroom_temperature
+```
+
+All options: [`ha-m3-slim-temperature-card/README.md`](ha-m3-slim-temperature-card/README.md).
 
 ## History
 

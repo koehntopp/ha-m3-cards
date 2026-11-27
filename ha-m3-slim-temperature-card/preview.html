@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif; min-height: 100vh; background: #1f2230;
+         --primary-text-color: #e3e6f0; --card-background-color: #2b2e3d; --secondary-text-color: #9aa0b4; }
+  ha-icon { display: inline-flex; }
+  h4 { margin: 20px 0 8px; color: var(--secondary-text-color); font-weight: 400; font-size: 13px; }
+  .col { width: 520px; }
+  body.shot { padding: 0; background: #1f2230; }
+  body.shot h4, body.shot section:not(:first-child) { display: none; }
+</style>
+<div class="col">
+  <section><h4>Rows of 3, 4 and 3 with separators; outdoor on the weather scale; trend arrow</h4><m3-slim-temperature-card id="a"></m3-slim-temperature-card></section>
+  <section><h4>Energy card for comparison (same tile height)</h4><m3-slim-energy-card id="e"></m3-slim-energy-card></section>
+  <section><h4>German, one tile unavailable, two in a row</h4><m3-slim-temperature-card id="b"></m3-slim-temperature-card></section>
+</div>
+<script>
+  // ha-icon mock: MDI webfont (HA ships its own); the CSS does not cross into the shadow root
+  customElements.define("ha-icon", class extends HTMLElement {
+    connectedCallback() {
+      const r = this.getRootNode();
+      if (r !== document && !r.querySelector("link[data-mdi]")) {
+        const l = document.createElement("link");
+        l.rel = "stylesheet"; l.href = document.querySelector("link").href; l.setAttribute("data-mdi", "");
+        r.prepend(l);
+      }
+      this.innerHTML = `<i class="mdi mdi-${this.getAttribute("icon").slice(4)}"></i>`;
+    }
+  });
+  if (location.search.includes("shot")) document.body.classList.add("shot");
+</script>
+<script src="m3-slim-temperature-card.js"></script>
+<!-- a module, so its top-level names do not clash with this card's -->
+<script type="module" src="../ha-m3-slim-energy-card/m3-slim-energy-card.js"></script>
+<script>
+  const states = {}, entities = {}, devices = {}, areas = {};
+  const room = (id, area, icon, t, h) => {
+    areas[id] = { name: area, icon }; devices[id] = { area_id: id };
+    states[`sensor.${id}_temperature`] = { state: String(t), attributes: { friendly_name: `${area} Temperature`, device_class: "temperature", unit_of_measurement: "°C" } };
+    entities[`sensor.${id}_temperature`] = { device_id: id };
+    if (h !== undefined) {
+      states[`sensor.${id}_humidity`] = { state: String(h), attributes: { device_class: "humidity", unit_of_measurement: "%" } };
+      entities[`sensor.${id}_humidity`] = { device_id: id };
+    }
+    return `sensor.${id}_temperature`;
+  };
+  const ids = [
+    room("draussen", "Draußen", "mdi:home-thermometer-outline", -1.2, 70),
+    room("kueche", "Küche", "mdi:stove", 19.8, 38),
+    room("wohnzimmer", "Wohnzimmer", "mdi:sofa", 21.6, 34),
+    room("flur_og", "Flur OG", "mdi:home-floor-1", 21.4, 35),
+    room("mara", "Mara", "mdi:bed", 22.2, 34),
+    room("fiona", "Fiona", "mdi:bed", 20.7, 39),
+    room("bad", "Bad", "mdi:bathtub-outline", 21.9, 35),
+    room("flur_ug", "Flur UG", "mdi:home-floor-negative-1", 23.0, 32),
+    room("heizung", "Heizungsraum", "mdi:water-boiler", 23.1, 33),
+    room("az", "Arbeitszimmer", "mdi:desk", 22.9, 31),
+    room("gone", "Garage", "mdi:garage", "unavailable"),
+  ];
+  // the trend: an hour ago it was 0.8 K warmer outside
+  const callWS = async (msg) => Object.fromEntries(msg.entity_ids.map((id) => [id, [{ s: id.includes("draussen") ? "-0.4" : states[id].state }]]));
+  const hass = (language = "en") => ({ states, entities, devices, areas, language, locale: { language }, callWS });
+  const mount = (id, config, h) => { const el = document.getElementById(id); el.setConfig(config); el.hass = h; };
+  mount("a", { entities: [{ entity: ids[0], outdoor: true }, ids[1], ids[2], "separator", ids[3], ids[4], ids[5], ids[6], "separator", ids[7], ids[8], ids[9]] }, hass());
+  mount("b", { entities: [ids[1], ids[10]] }, hass("de"));
+  const p = (v) => ({ state: String(v), attributes: { unit_of_measurement: "kW" } });
+  Object.assign(states, { "sensor.pv": p(0), "sensor.bat": p(-1.88), "sensor.soc": { state: "67", attributes: { unit_of_measurement: "%" } }, "sensor.grid": p(0.01) });
+  customElements.whenDefined("m3-slim-energy-card").then(() => mount("e", { entities: [{ type: "solar", entity: "sensor.pv" }, { type: "battery", entity: "sensor.bat", soc_entity: "sensor.soc" }, { type: "grid", entity: "sensor.grid" }] }, hass()));
+</script>
