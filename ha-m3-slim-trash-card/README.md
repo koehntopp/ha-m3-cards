@@ -7,10 +7,12 @@ no reminder mode.
 
 <img src="docs/card.png" alt="M3 Slim Trash Card" width="55%">
 
-- **Hero**: the next pickup's bin, its weekday (or the days, or the date) and
-  the bin's name. Today and tomorrow are words. Several bins on the same day
-  are named together; `hero_icon: multi` overlaps their icons.
-- **Timeline**: one marker per bin over the next two weeks (7–28 days).
+- **Hero**: the next pickup's weekday (or the days, or the date), with the
+  bin and how far off it is in the line above ("Next collection: Bio · in 6
+  days"). Today and tomorrow are words. Several bins on the same day are
+  named together; `hero_icon: multi` overlaps their icons.
+- **Timeline**: the hero's bottom line, one marker per bin over the next two
+  weeks (7–28 days), with today, the middle and the end marked below.
   Bins on the same day stack, and a group at the end stays inside the track.
   Collections beyond the span are left out instead of piling up at the end.
 - **Sensors**: state is the number of days until collection (e.g. Waste
@@ -49,10 +51,9 @@ hero_primary: weekday     # weekday (default) | days | date
 | `entities` | — | sensors: id, or `{ entity, name, icon, color }` |
 | `hero_primary` | `weekday` | what leads: `weekday` ("Thursday"), `days` ("In 6 days"), `date` ("3 Dec"); the other goes underneath |
 | `hero_icon` | `first` | `first`: one icon; `multi`: all bins of that day, overlapping |
-| `title` | "Next collection" | label above the hero's main line |
-| `show_timeline` | `true` | `false` keeps only the hero |
+| `title` | "Next collection" | start of the line above the hero's main line |
+| `show_timeline` | `true` | `false` drops the timeline; the bin moves to its own line under the main line |
 | `timeline_days` | `14` | timeline span, 7–28 |
-| `timeline_title` | "Next two weeks" | label above the timeline |
 
 ## License
 MIT

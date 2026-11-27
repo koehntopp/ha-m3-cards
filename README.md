@@ -138,7 +138,8 @@ The next bin collection and a timeline of the coming two weeks.
 
 - Hero with the next pickup: weekday (or days, or date), bin name, today and
   tomorrow as words; bins on the same day are named together.
-- Timeline with one marker per bin, same-day bins stacked, 7–28 days.
+- Timeline as the hero's bottom line: one marker per bin, same-day bins
+  stacked, 7–28 days.
 - Sensors give days until collection or the date itself, or one Waste
   Collection Schedule sensor (`details_format: upcoming`) covers all bins.
   Icons and colours follow the bin's name.

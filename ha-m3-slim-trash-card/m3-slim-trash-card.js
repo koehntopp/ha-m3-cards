@@ -3,8 +3,8 @@
 // j0sp0r/m3-cards (MIT); this is a standalone, dependency-free version of its
 // hero + timeline, without the per-bin list and the reminder mode.
 
-const DOT = 15; // px, timeline marker size
-const STACK = 10; // px, offset between markers on the same day
+const DOT = 12; // px, timeline marker size
+const STACK = 8; // px, offset between markers on the same day
 const DEFAULT_ICON = "mdi:trash-can-outline";
 const DEFAULT_COLOR = "#9fb0c0";
 const RULES = [
@@ -19,11 +19,11 @@ const RULES = [
 const STRINGS = {
   en: {
     next: "Next collection", none: "No collection scheduled", today: "Today", tomorrow: "Tomorrow",
-    in_days: (n) => `in ${n} days`, today_short: "today", span: (n) => (n === 14 ? "Next two weeks" : `Next ${n} days`),
+    in_days: (n) => `in ${n} days`, today_short: "today",
   },
   de: {
     next: "Nächste Abholung", none: "Keine Abholung geplant", today: "Heute", tomorrow: "Morgen",
-    in_days: (n) => `in ${n} Tagen`, today_short: "heute", span: (n) => (n === 14 ? "Nächste zwei Wochen" : `Nächste ${n} Tage`),
+    in_days: (n) => `in ${n} Tagen`, today_short: "heute",
   },
 };
 
@@ -59,8 +59,9 @@ const CSS = `
     background: var(--m3-surface); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
     color: var(--primary-text-color);
   }
-  .hero { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 20px; cursor: pointer;
-          background: color-mix(in srgb, var(--accent) 9%, var(--ha-card-background, var(--card-background-color)));
+  .hero { --hero-bg: color-mix(in srgb, var(--accent) 9%, var(--ha-card-background, var(--card-background-color)));
+          display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 20px; cursor: pointer;
+          background: var(--hero-bg);
           transition: border-radius .35s cubic-bezier(.2, 0, 0, 1); }
   .hero:active { border-radius: 13px; }
   .icons { flex: none; display: flex; }
@@ -70,20 +71,20 @@ const CSS = `
           color: color-mix(in srgb, var(--c) 85%, var(--primary-text-color)); }
   .icons .well + .well { margin-left: -22px; box-shadow: -2px 0 0 0 var(--ha-card-background, var(--card-background-color)); }
   .ht { flex: 1; min-width: 0; }
-  .label { font-size: 12px; opacity: .7; }
+  .label { font-size: 12px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .main { font-size: 21px; font-weight: 700; line-height: 1.15;
           color: color-mix(in srgb, var(--accent) 85%, var(--primary-text-color)); }
   .sub { font-size: 13px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tl { display: flex; flex-direction: column; gap: 6px; padding: 0 2px; }
-  .tl-label { font-size: 12px; opacity: .6; }
-  .track { position: relative; height: 20px; }
+  /* the timeline is the hero's last line */
+  .tl { margin-top: 6px; }
+  .track { position: relative; height: 16px; }
   .line { position: absolute; top: 50%; left: 0; right: 0; height: 3px; transform: translateY(-50%); border-radius: 2px;
           background: color-mix(in srgb, var(--primary-text-color) 12%, var(--ha-card-background, var(--card-background-color))); }
   /* a day's markers form one group, positioned so the group never leaves the track */
   .day { position: absolute; top: 50%; height: ${DOT}px; transform: translateY(-50%); cursor: pointer; }
   .dot { position: absolute; top: 0; width: ${DOT}px; height: ${DOT}px; border-radius: 5px; background: var(--c);
-         box-shadow: 0 0 0 2px var(--ha-card-background, var(--card-background-color)); }
-  .axis { display: flex; justify-content: space-between; font-size: 10px; opacity: .5; }
+         box-shadow: 0 0 0 2px var(--hero-bg); }
+  .axis { display: flex; justify-content: space-between; font-size: 10px; line-height: 12px; opacity: .5; margin-top: 2px; }
 `;
 
 class M3SlimTrashCard extends HTMLElement {
@@ -217,7 +218,6 @@ class M3SlimTrashCard extends HTMLElement {
       }).join("");
       timeline = `
         <div class="tl">
-          <div class="tl-label">${esc(this._config.timeline_title ?? t.span(span))}</div>
           <div class="track"><div class="line"></div>${groups}</div>
           <div class="axis"><span>${t.today_short}</span><span>+${Math.round(span / 2)}</span><span>+${span}</span></div>
         </div>`;
@@ -230,12 +230,11 @@ class M3SlimTrashCard extends HTMLElement {
           <div class="hero" ${next ? `data-entity="${esc(next.entity)}"` : ""}>
             <div class="icons">${icons}</div>
             <div class="ht">
-              <div class="label">${esc(next ? this._config.title ?? t.next : t.none)}</div>
+              <div class="label">${esc(!next ? t.none : timeline ? `${this._config.title ?? t.next}: ${sub}` : this._config.title ?? t.next)}</div>
               <div class="main">${esc(main)}</div>
-              ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
+              ${timeline || (sub ? `<div class="sub">${esc(sub)}</div>` : "")}
             </div>
           </div>
-          ${timeline}
         </div>
       </ha-card>`;
   }
@@ -264,7 +263,6 @@ class M3SlimTrashCardEditor extends HTMLElement {
         hero_icon: "Icons on a shared day",
         show_timeline: "Show timeline",
         timeline_days: "Timeline days (7–28)",
-        timeline_title: "Timeline label",
       })[s.name] ?? s.name;
       this._form.addEventListener("value-changed", (ev) => {
         const v = ev.detail.value;
@@ -292,7 +290,6 @@ class M3SlimTrashCardEditor extends HTMLElement {
       { name: "title", selector: { text: {} } },
       { name: "show_timeline", selector: { boolean: {} } },
       { name: "timeline_days", selector: { number: { min: 7, max: 28, step: 1, mode: "box" } } },
-      { name: "timeline_title", selector: { text: {} } },
     ];
     this._form.data = {
       hero_primary: "weekday", hero_icon: "first", show_timeline: true, timeline_days: 14,
