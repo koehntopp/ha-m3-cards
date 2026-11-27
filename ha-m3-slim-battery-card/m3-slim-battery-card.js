@@ -38,6 +38,7 @@ const CSS = `
           --mdc-icon-size: 24px; font-size: 24px;
           background: color-mix(in srgb, var(--c) 22%, var(--ha-card-background, var(--card-background-color)));
           color: color-mix(in srgb, var(--c) 85%, var(--primary-text-color)); }
+  .well ha-icon { display: flex; } /* inline, it sits on the text baseline and drops low when text is enlarged */
   .pct { font-size: 16px; font-weight: 700; line-height: 1.1;
          color: color-mix(in srgb, var(--c) 80%, var(--primary-text-color)); }
   .name { max-width: 100%; font-size: 11px; opacity: .8; text-align: center;

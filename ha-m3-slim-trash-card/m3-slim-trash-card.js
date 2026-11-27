@@ -69,6 +69,7 @@ const CSS = `
           --mdc-icon-size: 28px; font-size: 28px;
           background: color-mix(in srgb, var(--c) 22%, var(--ha-card-background, var(--card-background-color)));
           color: color-mix(in srgb, var(--c) 85%, var(--primary-text-color)); }
+  .well ha-icon { display: flex; } /* inline, it sits on the text baseline and drops low when text is enlarged */
   .icons .well + .well { margin-left: -22px; box-shadow: -2px 0 0 0 var(--ha-card-background, var(--card-background-color)); }
   .ht { flex: 1; min-width: 0; }
   .label { font-size: 12px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
