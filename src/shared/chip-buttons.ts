@@ -1,0 +1,710 @@
+import { html, css, nothing, unsafeCSS, type TemplateResult } from "lit";
+import { STANDARD_EASING } from "./animation";
+import type { HomeAssistant, HassEntity, ChipButtonConfig, ChipButtonsRowConfig } from "../types";
+import { cssIdent } from "./css-safe";
+import {
+  STATELESS_DOMAINS,
+  ACTIVE_STATES,
+  CHIP_BUTTON_HEIGHT,
+  CHIP_BUTTON_ICON_SIZE,
+  BUTTON_SHAPE_MS,
+  CHIP_SHAPE_ON_RADIUS,
+} from "../const";
+import { RADIUS } from "./tokens";
+import { resolveThemeColor, tintOn, foregroundOn } from "./color-config";
+import { runHaAction, navigateTo, type RunActionContext } from "./actions";
+import { defaultEntityAction } from "./entity-actions";
+import type { TapHoldGesture } from "./gestures";
+import { stopSwipe } from "./swipe";
+import { openEntityDetail } from "./entity-detail";
+import { allMet, conditionEntities } from "./vehicle";
+import { isTemplate, templateTruthy } from "./template-sub";
+
+// Renders a horizontal row of tappable "chip button" chips — the M3 answer to
+// Bubble Card's sub-buttons feature (see .claude/docs/NOTES.md). Lives in
+// shared/ rather than only on m3-chip-buttons-card so any card can embed a
+// chip row later, matching this project's "gemeinsame Logik IMMER hier"
+// convention (CLAUDE.md).
+
+export interface ChipButtonsRenderState {
+  /** Key of the chip currently mid-press, for the `.pressed` scale cue. */
+  pressedKey?: string;
+  /**
+   * Draw hidden chips anyway, faded — in the dashboard editor, where a chip
+   * that is hidden right now still has to be findable and editable.
+   */
+  showHidden?: boolean;
+  /** Owned by the consuming card; one instance shared across every chip. */
+  gestures: TapHoldGesture;
+  onPressChange: (key: string | undefined) => void;
+}
+
+function isActive(entity: HassEntity | undefined, domain: string): boolean {
+  if (!entity) return false;
+  if (STATELESS_DOMAINS.has(domain)) return true;
+  return ACTIVE_STATES.has(entity.state);
+}
+
+function chipKey(button: ChipButtonConfig, index: number): string {
+  return button.entity ?? `#${index}`;
+}
+
+// The color HA's own frontend theme assigns this domain/state pair — the
+// same `--state-<domain>-<state>-color` custom properties the native tile
+// card colors itself with. Falls back through the domain-only var, then the
+// generic active color, then the theme accent, so an undefined var never
+// leaves the chip transparent.
+function entityStateColorVar(domain: string, entityState: string): string {
+  // A custom property name cannot be quoted, so nothing that could end it
+  // may reach it — see shared/css-safe.ts.
+  const d = cssIdent(domain);
+  const st = cssIdent(entityState);
+  return `var(--state-${d}-${st}-color, var(--state-${d}-color, var(--state-active-color, var(--primary-color))))`;
+}
+
+const INACTIVE_ENTITY_COLOR_VAR =
+  "var(--state-inactive-color, var(--disabled-text-color, var(--primary-text-color)))";
+
+// The three ways a row can handle more chips than fit: stretched to share the
+// width, wrapped onto a second line, or kept on one line and scrolled. A
+// `smart` stretch is still a stretch — it shares the width, only not evenly —
+// so it keeps the `stretch` class and adds `smart` for updateSmartStretch().
+export function chipRowLayoutClass(
+  config: ChipButtonsRowConfig,
+): "stretch smart" | "stretch" | "wrap" | "scroll" {
+  if (config.stretch === "smart") return "stretch smart";
+  return config.stretch ? "stretch" : config.wrap ? "wrap" : "scroll";
+}
+
+// The row config a card that *embeds* a chip row derives from its own options,
+// as opposed to m3-chip-buttons-card, which is configured as a row directly.
+// `chip_buttons_layout` defaults to wrapping, which is what embedded rows did
+// before the option existed.
+export function embeddedChipRowConfig(config: {
+  chip_buttons?: ChipButtonConfig[];
+  chip_buttons_layout?: "wrap" | "scroll";
+}): ChipButtonsRowConfig {
+  return {
+    buttons: config.chip_buttons ?? [],
+    wrap: config.chip_buttons_layout !== "scroll",
+  };
+}
+
+// `chip_buttons_justify` in a card's own vocabulary, as the flexbox value the
+// row is laid out with. Defaults to the right edge, where an embedded row sits
+// next to the card's content.
+export function chipRowJustify(justify: "start" | "center" | "end" | undefined): string {
+  if (justify === "start") return "flex-start";
+  if (justify === "center") return "center";
+  return "flex-end";
+}
+
+/**
+ * Whether a chip shows right now (#37): not `hidden`, and every `visible`
+ * condition met. An unrendered template counts as false for `hidden` (the
+ * chip shows until the value arrives) and as unmet for `visible`.
+ */
+export function chipVisible(hass: HomeAssistant | undefined, button: ChipButtonConfig): boolean {
+  const hidden = button.hidden;
+  if (hidden === true) return false;
+  if (typeof hidden === "string" && !isTemplate(hidden) && templateTruthy(hidden)) return false;
+  return allMet(hass, button.visible, button.entity, Date.now());
+}
+
+/** Every entity a chip's `visible` conditions read, for shouldUpdate. */
+export function chipConditionEntities(buttons: ChipButtonConfig[] | undefined): string[] {
+  return (buttons ?? []).flatMap((b) => conditionEntities(b.visible));
+}
+
+export function renderChipButtons(
+  host: HTMLElement,
+  hass: HomeAssistant,
+  config: ChipButtonsRowConfig,
+  state: ChipButtonsRenderState,
+): TemplateResult {
+  const buttons = config.buttons ?? [];
+  const layoutClass = chipRowLayoutClass(config);
+  return html`
+    <div
+      class="swiper m3-chip-buttons ${layoutClass} ${config.shape_by_state === true ? "shaped" : ""}"
+      style=${`justify-content: ${config.justify ?? "start"};`}
+      @touchstart=${stopSwipe}
+      @touchmove=${stopSwipe}
+      @touchend=${stopSwipe}
+      @mousedown=${stopSwipe}
+      @mousemove=${stopSwipe}
+      @mouseup=${stopSwipe}
+    >
+      ${buttons.map((button, index) => {
+        // The key keeps the chip's place in the config, so hiding one does not
+        // hand its press state or animation to its neighbour.
+        if (chipVisible(hass, button)) return renderChipButton(host, hass, button, chipKey(button, index), state);
+        if (!state.showHidden) return nothing;
+        return html`<div class="m3-chip-hidden-preview">
+          ${renderChipButton(host, hass, button, chipKey(button, index), state)}
+        </div>`;
+      })}
+    </div>
+  `;
+}
+
+function renderChipButton(
+  host: HTMLElement,
+  hass: HomeAssistant,
+  button: ChipButtonConfig,
+  key: string,
+  state: ChipButtonsRenderState,
+): TemplateResult {
+  const entity = button.entity ? hass.states[button.entity] : undefined;
+  const domain = button.entity?.split(".")[0] ?? "";
+  const unavailable = entity?.state === "unavailable";
+  const active = button.static_color === true || (!unavailable && isActive(entity, domain));
+  // An explicit per-state override always wins — it's the escape hatch for
+  // the cases use_entity_color can't cover: HA doesn't expose a
+  // `--state-<domain>-<state>-color` custom property for every domain/state
+  // pair (cover and binary_sensor door have none), so a chip left on
+  // use_entity_color alone can fall through to the generic active color.
+  const stateColorOverride = entity ? button.state_colors?.[entity.state] : undefined;
+  const activeColor = stateColorOverride
+    ? resolveThemeColor(stateColorOverride)
+    : button.use_entity_color
+      ? entityStateColorVar(domain || "state", entity?.state ?? "on")
+      : resolveThemeColor(button.color || "primary");
+  // An inactive state can still have a color of its own: a locked door is
+  // "nothing to see" (so not in ACTIVE_STATES), yet HA paints it green. The
+  // domain/state var is tried first and only its absence falls to grey.
+  const inactiveColor = button.use_entity_color
+    ? entity
+      ? `var(--state-${cssIdent(domain)}-${cssIdent(entity.state)}-color, ${INACTIVE_ENTITY_COLOR_VAR})`
+      : INACTIVE_ENTITY_COLOR_VAR
+    : button.inactive_color
+      ? resolveThemeColor(button.inactive_color)
+      : "var(--primary-text-color)";
+  // A state the user gave a color of their own is drawn in it whatever the
+  // state is — otherwise `state_colors.locked` would never show, because a
+  // locked lock renders through the inactive branch.
+  const highlighted = active || (!!stateColorOverride && !unavailable);
+  const color = highlighted ? activeColor : inactiveColor;
+  const bg = tintOn(host, color, undefined, highlighted ? 20 : 8);
+  const ink = foregroundOn(color, bg, 3, host);
+  const name = button.name || entity?.attributes.friendly_name || button.entity || "";
+  // A button, a scene or a script has no state worth reading — it is
+  // "unknown" until pressed and a timestamp after, and neither is news. So
+  // those default to hiding it, while `show_state: true` still forces it for
+  // anyone who wants the timestamp.
+  const stateless = STATELESS_DOMAINS.has(domain);
+  const showState = button.show_state ?? !stateless;
+  const stateText =
+    showState && entity && !unavailable
+      ? (hass.formatEntityState?.(entity) ?? entity.state)
+      : "";
+  const cssVars = `--m3cb-bg: ${bg}; --m3cb-ink: ${ink};`;
+  const icon = button.icon || "mdi:gesture-tap-button";
+  const shownName = button.show_name === false ? "" : name.trim();
+  const iconOnly = !shownName && !stateText;
+  // The inner .label-text is what updateChipLabelScroll() slides when the
+  // text is wider than the chip; the outer .label is the clipping window.
+  const label = iconOnly
+    ? nothing
+    : html`<span class="label"
+        ><span class="label-text"
+          >${shownName}${stateText
+            ? html`<span class="state">${shownName ? " " : ""}${stateText}</span>`
+            : nothing}</span
+        ></span
+      >`;
+
+  // A pure display chip (Bubble Card's info-row equivalent): no pointer/
+  // keyboard handlers, no button role — it isn't tappable.
+  if (button.interactive === false) {
+    return html`
+      <div class="m3-chip-button static ${iconOnly ? "icon-only" : ""} ${highlighted ? "on" : ""}" style=${cssVars}>
+        ${entity
+          ? html`<ha-state-icon .hass=${hass} .icon=${button.icon} .stateObj=${entity}></ha-state-icon>`
+          : html`<ha-icon icon=${icon}></ha-icon>`}
+        ${label}
+      </div>
+    `;
+  }
+
+  // Without a configured action the chip does what the entity is for: a script
+  // starts, a button is pressed, a switch toggles, and only something with no
+  // obvious verb opens more-info. `runHaAction` alone would fall back to
+  // more-info for all of them — and a chip labelled "Vollreinigung" that opens
+  // a dialog instead of cleaning is a chip that appears not to work, which is
+  // exactly what `defaultEntityAction` was written for. The button card has
+  // always done this; the chip row was the one place that did not ask.
+  const tap = button.tap_action ?? defaultEntityAction(domain);
+  const hasHold = (button.hold_action?.action ?? "none") !== "none";
+  const hasDoubleTap = (button.double_tap_action?.action ?? "none") !== "none";
+  const ctx: RunActionContext = {
+    entityId: button.entity,
+    fireMoreInfo: (entityId) => openEntityDetail(host, entityId),
+    navigate: (path) => navigateTo(host, path),
+  };
+  const listeners = state.gestures.listeners({
+    onTap: () => runHaAction(hass, tap, ctx),
+    onHold: hasHold ? () => runHaAction(hass, button.hold_action, ctx) : undefined,
+    onDoubleTap: hasDoubleTap ? () => runHaAction(hass, button.double_tap_action, ctx) : undefined,
+    onPressChange: (pressed) => state.onPressChange(pressed ? key : undefined),
+  });
+
+  return html`
+    <div
+      class="m3-chip-button ${iconOnly ? "icon-only" : ""} ${highlighted ? "on" : ""} ${state.pressedKey === key ? "pressed" : ""}"
+      style=${cssVars}
+      role="button"
+      tabindex="0"
+      aria-label=${name}
+      @pointerdown=${listeners["@pointerdown"]}
+      @pointermove=${listeners["@pointermove"]}
+      @pointerup=${listeners["@pointerup"]}
+      @pointercancel=${listeners["@pointercancel"]}
+      @contextmenu=${listeners["@contextmenu"]}
+      @keydown=${listeners["@keydown"]}
+    >
+      ${entity
+        ? html`<ha-state-icon .hass=${hass} .icon=${button.icon} .stateObj=${entity}></ha-state-icon>`
+        : html`<ha-icon icon=${icon}></ha-icon>`}
+      ${label}
+    </div>
+  `;
+}
+
+// Widths for a `stretch: smart` row. A chip that fits keeps its content
+// width, and short chips are the ones that must never give any up: losing
+// three of "15,2 °C"'s six characters costs far more than losing the same
+// pixels from a long name. So when the row is too narrow, the width is split
+// max-min fairly — every chip gets the same cap, and chips narrower than it
+// keep their full width while only the ones above it are cut down to it.
+// When the row has room to spare, the rest is shared out evenly on top of
+// each content width. `fixed` chips (round icon buttons) keep their content
+// width in both cases: they never grow, and they are taken off the top
+// before the rest is shared out, so they are never cut either. If the fixed
+// chips alone exceed the row, the row overflows by that much — there is no
+// width to give them that would not misreport the layout.
+export function smartChipWidths(natural: number[], available: number, fixed: boolean[] = []): number[] {
+  const total = natural.reduce((sum, w) => sum + w, 0);
+  if (total <= available) {
+    const growing = natural.filter((_, i) => !fixed[i]).length;
+    const extra = growing ? (available - total) / growing : 0;
+    return natural.map((w, i) => (fixed[i] ? w : w + extra));
+  }
+  const widths = [...natural];
+  const order = natural
+    .map((_, i) => i)
+    .filter((i) => !fixed[i])
+    .sort((a, b) => natural[a] - natural[b]);
+  let remaining = Math.max(0, available - natural.reduce((sum, w, i) => sum + (fixed[i] ? w : 0), 0));
+  for (let k = 0; k < order.length; k++) {
+    const cap = remaining / (order.length - k);
+    const i = order[k];
+    if (natural[i] <= cap) {
+      remaining -= natural[i];
+      continue;
+    }
+    for (let j = k; j < order.length; j++) widths[order[j]] = cap;
+    break;
+  }
+  return widths;
+}
+
+// Sizes the chips of every `stretch: smart` row under `root`. Call after
+// each render and on resize, before updateChipLabelScroll() — which label
+// overflows depends on the width handed out here.
+export function updateSmartStretch(root: ParentNode): void {
+  for (const row of root.querySelectorAll<HTMLElement>(".m3-chip-buttons.stretch.smart")) {
+    const chips = [...row.querySelectorAll<HTMLElement>(":scope > .m3-chip-button")];
+    if (!chips.length) continue;
+    // Content widths, read with every chip briefly at its natural size.
+    // Rounded up with a pixel to spare: a chip handed exactly its fractional
+    // content width can still lay out a hair narrower, and the ellipsis then
+    // takes the last character — which is usually the unit ("71 %" → "71…").
+    row.classList.add("measuring");
+    const natural = chips.map((chip) => Math.ceil(chip.getBoundingClientRect().width) + 1);
+    row.classList.remove("measuring");
+    const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+    const available = row.clientWidth - gap * (chips.length - 1);
+    const fixed = chips.map((chip) => chip.classList.contains("icon-only"));
+    const widths = smartChipWidths(natural, available, fixed);
+    // Only a chip cut below its content may shrink further; one that got its
+    // full width is held there, so rounding never comes out of a short chip.
+    chips.forEach((chip, i) => {
+      const flex = `0 ${widths[i] < natural[i] ? 1 : 0} ${widths[i].toFixed(2)}px`;
+      if (chip.style.flex !== flex) chip.style.flex = flex;
+    });
+  }
+}
+
+// Measures every chip label under `root` and turns the slide on exactly for
+// the ones whose text is wider than the space they got. Call after each
+// render and whenever the row resizes — both change the answer.
+export function updateChipLabelScroll(root: ParentNode): void {
+  for (const label of root.querySelectorAll<HTMLElement>(".m3-chip-button .label")) {
+    const text = label.querySelector<HTMLElement>(".label-text");
+    if (!text) continue;
+    // offsetWidth ignores the slide's transform, so this reads the same
+    // whether the label is currently scrolling or not — and nothing is
+    // touched unless the answer changed, since every hass update re-renders
+    // and resetting the class or the vars would restart the animation.
+    const overflow = text.offsetWidth - label.clientWidth;
+    const scroll = overflow > 1;
+    if (scroll) {
+      const distance = `-${overflow}px`;
+      if (label.style.getPropertyValue("--m3cb-scroll-distance") !== distance) {
+        label.style.setProperty("--m3cb-scroll-distance", distance);
+        // ~30px/s, with a floor so a few pixels don't twitch back and forth.
+        label.style.setProperty("--m3cb-scroll-duration", `${Math.max(3, overflow / 30 + 2).toFixed(1)}s`);
+      }
+    }
+    label.classList.toggle("scrolling", scroll);
+  }
+}
+
+// Which edges of a scrolling chip row still have chips hidden behind them.
+// Kept as a pure function over the row's scroll metrics so the fade behaviour
+// is testable without a layout engine.
+export function chipRowFades(metrics: {
+  scrollLeft: number;
+  scrollWidth: number;
+  clientWidth: number;
+}): { start: boolean; end: boolean } {
+  // A sub-pixel slack: a row that fits exactly still reports a stray fraction,
+  // and fading an edge that has nothing behind it reads as a rendering fault
+  // rather than an affordance.
+  const hidden = metrics.scrollWidth - metrics.clientWidth;
+  return {
+    start: metrics.scrollLeft > 1,
+    end: hidden > 1 && metrics.scrollLeft < hidden - 1,
+  };
+}
+
+// Keeps `.fade-start`/`.fade-end` on every scrolling chip row of a card in
+// sync with that row's real scroll position. It lives here rather than on
+// either card for the same reason `stopSwipe` lives in shared/swipe.ts: both
+// call sites get it and a third one can't forget it. A card drives it from
+// `updated()` and releases it in `disconnectedCallback()`.
+export class ChipRowFadeController {
+  private _observer?: ResizeObserver;
+  private _rows: HTMLElement[] = [];
+
+  private _onScroll = (event: Event): void => {
+    this._apply(event.currentTarget as HTMLElement);
+  };
+
+  /** Re-binds whenever Lit swaps the row elements out, then refreshes them. */
+  public sync(root: ParentNode): void {
+    const rows = Array.from(root.querySelectorAll<HTMLElement>(".m3-chip-buttons.scroll"));
+    const changed =
+      rows.length !== this._rows.length || rows.some((row, index) => row !== this._rows[index]);
+    if (changed) {
+      this._release();
+      this._rows = rows;
+      if (rows.length > 0) {
+        // Both matter: resizing changes whether anything overflows at all,
+        // scrolling changes which side it overflows on.
+        this._observer = new ResizeObserver((entries) => {
+          for (const entry of entries) this._apply(entry.target as HTMLElement);
+        });
+        for (const row of rows) {
+          this._observer.observe(row);
+          row.addEventListener("scroll", this._onScroll, { passive: true });
+        }
+      }
+    }
+    for (const row of this._rows) this._apply(row);
+  }
+
+  public disconnect(): void {
+    this._release();
+    this._rows = [];
+  }
+
+  private _release(): void {
+    this._observer?.disconnect();
+    this._observer = undefined;
+    for (const row of this._rows) row.removeEventListener("scroll", this._onScroll);
+  }
+
+  private _apply(row: HTMLElement): void {
+    const { start, end } = chipRowFades(row);
+    row.classList.toggle("fade-start", start);
+    row.classList.toggle("fade-end", end);
+  }
+}
+
+// What decides a row's smart widths and label slides, read without touching
+// layout: textContent and the chip count are plain DOM reads, where measuring
+// a label forces the browser to lay the row out. Icons are left out on
+// purpose — a chip's icon box has a fixed size, so it never moves a width.
+export function chipRowSignature(rows: readonly HTMLElement[]): string {
+  return rows
+    .map(
+      (row) =>
+        `${row.classList.contains("smart") ? "s" : ""}${row.classList.contains("stretch") ? "t" : ""}` +
+        `${row.childElementCount}:${row.textContent ?? ""}`,
+    )
+    .join("\n");
+}
+
+// Runs both measuring passes over every chip row under `root`, in the order
+// they depend on each other: which label overflows depends on the widths.
+export function layoutChipRows(root: ParentNode): void {
+  updateSmartStretch(root);
+  updateChipLabelScroll(root);
+}
+
+// Everything a card drawing chip rows owes them after a render: the edge
+// fades, the `stretch: smart` widths and the sliding labels. One controller
+// rather than three calls so a card can't wire up some of it and quietly miss
+// the rest. Drive it from `updated()`, release it in `disconnectedCallback()`.
+//
+// The two measuring passes don't run on every render. A `hass` tick
+// re-renders every chip card on a view, and measuring each time costs a
+// forced layout per chip per tick. They run when a row is first seen, when it
+// resizes, and when what is written on its chips changes — which is the only
+// time their answer can.
+export class ChipRowController {
+  private _fades = new ChipRowFadeController();
+  private _observer?: ResizeObserver;
+  private _rows: HTMLElement[] = [];
+  private _root?: ParentNode;
+  private _signature?: string;
+
+  constructor(private readonly _layout: (root: ParentNode) => void = layoutChipRows) {}
+
+  public sync(root: ParentNode): void {
+    this._fades.sync(root);
+    this._root = root;
+    const rows = Array.from(root.querySelectorAll<HTMLElement>(".m3-chip-buttons"));
+    const changed =
+      rows.length !== this._rows.length || rows.some((row, index) => row !== this._rows[index]);
+    if (changed) {
+      this._observer?.disconnect();
+      this._observer = undefined;
+      this._rows = rows;
+      if (rows.length > 0) {
+        this._observer = new ResizeObserver(() => this._measure());
+        for (const row of rows) this._observer.observe(row);
+      }
+    }
+    if (rows.length > 0 && (changed || chipRowSignature(rows) !== this._signature)) this._measure();
+  }
+
+  public disconnect(): void {
+    this._fades.disconnect();
+    this._observer?.disconnect();
+    this._observer = undefined;
+    this._rows = [];
+    this._root = undefined;
+    this._signature = undefined;
+  }
+
+  private _measure(): void {
+    if (!this._root) return;
+    this._signature = chipRowSignature(this._rows);
+    this._layout(this._root);
+  }
+}
+
+export const chipButtonsStyles = css`
+  /* A chip hidden right now, drawn in the dashboard editor only. The wrapper
+     takes no box, so the row lays out as it will once the chip shows. */
+  .m3-chip-hidden-preview {
+    display: contents;
+  }
+
+  .m3-chip-hidden-preview > * {
+    opacity: 0.35;
+  }
+
+  .m3-chip-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m3-chip-buttons.scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  /* The row scrolls with its scrollbar hidden, so a chip that does not fit was
+     cut off mid-word with nothing to say more existed. The edge fades instead
+     — but only on a side that actually has something hidden behind it, which
+     is why these are classes the card sets from the real scroll position and
+     not a mask that is simply always on. A permanent mask would eat into the
+     first chip even when the row fits and there is nothing to scroll to. */
+  .m3-chip-buttons.scroll.fade-start {
+    mask-image: linear-gradient(to right, transparent 0, #000 20px);
+  }
+
+  .m3-chip-buttons.scroll.fade-end {
+    mask-image: linear-gradient(to left, transparent 0, #000 20px);
+  }
+
+  .m3-chip-buttons.scroll.fade-start.fade-end {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 20px,
+      #000 calc(100% - 20px),
+      transparent 100%
+    );
+  }
+
+  .m3-chip-buttons.scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .m3-chip-buttons.wrap {
+    flex-wrap: wrap;
+  }
+
+  .m3-chip-buttons.stretch {
+    flex-wrap: nowrap;
+  }
+
+  .m3-chip-buttons.stretch .m3-chip-button {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  /* An even split hands a two-letter chip the same width as a long name, so
+     the short ones look oddly wide while the long one still has to scroll.
+     Smart rows are sized by updateSmartStretch() (see smartChipWidths()),
+     which sets each chip's flex inline; this is only the first paint before
+     it has measured. .measuring is its momentary natural-size read. A round
+     icon chip keeps its size — widened, it stops reading as an icon button. */
+  .m3-chip-buttons.stretch.smart .m3-chip-button {
+    flex: 1 1 auto;
+  }
+
+  .m3-chip-buttons.stretch.smart .m3-chip-button.icon-only,
+  .m3-chip-buttons.stretch.smart.measuring .m3-chip-button {
+    flex: 0 0 auto !important;
+  }
+
+  .m3-chip-button {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    height: ${CHIP_BUTTON_HEIGHT}px;
+    border-radius: ${RADIUS.chip}px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--m3cb-bg);
+    color: var(--m3cb-ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --mdc-icon-size: ${CHIP_BUTTON_ICON_SIZE}px;
+  }
+
+  /* A fixed box rather than whatever the icon element measures: ha-state-icon
+     renders its glyph in its own later update, so right after the chip row
+     renders it is still 0px wide — and updateSmartStretch() measures exactly
+     then. Without this every smart chip was sized one icon too narrow. */
+  .m3-chip-button > ha-icon,
+  .m3-chip-button > ha-state-icon {
+    flex: none;
+    display: inline-flex;
+    width: ${CHIP_BUTTON_ICON_SIZE}px;
+    height: ${CHIP_BUTTON_ICON_SIZE}px;
+  }
+
+  /* shape_by_state: a capsule while off, squarer while on. */
+  .m3-chip-buttons.shaped .m3-chip-button {
+    transition:
+      transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-radius ${BUTTON_SHAPE_MS}ms ${unsafeCSS(STANDARD_EASING)};
+  }
+  .m3-chip-buttons.shaped .m3-chip-button.on {
+    border-radius: ${CHIP_SHAPE_ON_RADIUS}px;
+  }
+
+  .m3-chip-button.static {
+    cursor: default;
+  }
+
+  /* Icon-only chips read as round icon buttons, not as text chips missing
+     their text — square (width = height) and centered rather than the
+     usual pill padded for a label that isn't there. */
+  .m3-chip-button.icon-only {
+    width: ${CHIP_BUTTON_HEIGHT}px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .m3-chip-button.pressed {
+    transform: scale(0.94);
+  }
+
+  .m3-chip-button:focus-visible {
+    outline: 2px solid var(--m3cb-ink);
+    outline-offset: 2px;
+  }
+
+  .m3-chip-button .label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* A label too wide for its chip (a stretched row splits the width evenly,
+     so a long name loses) slides to its end and back instead of ending in
+     an ellipsis — Bubble Card's scrolling_effect. Ping-pong rather than a
+     looping marquee, so the rendered text is never duplicated and Lit keeps
+     owning it. The distance and duration come from updateChipLabelScroll(),
+     which measures the real overflow. */
+  .m3-chip-button .label.scrolling {
+    text-overflow: clip;
+  }
+
+  .m3-chip-button .label.scrolling .label-text {
+    display: inline-block;
+    animation: m3cb-label-scroll var(--m3cb-scroll-duration, 4s) ease-in-out infinite alternate;
+  }
+
+  @keyframes m3cb-label-scroll {
+    0%,
+    15% {
+      transform: translateX(0);
+    }
+    85%,
+    100% {
+      transform: translateX(var(--m3cb-scroll-distance, 0));
+    }
+  }
+
+  /* The same ellipsis wherever motion is off: the OS setting, or a card's
+     own animation: false, which a host marks with .no-animations. */
+  .no-animations .m3-chip-button .label.scrolling {
+    text-overflow: ellipsis;
+  }
+
+  .no-animations .m3-chip-button .label.scrolling .label-text {
+    display: inline;
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .m3-chip-button .label.scrolling {
+      text-overflow: ellipsis;
+    }
+    .m3-chip-button .label.scrolling .label-text {
+      display: inline;
+      animation: none;
+    }
+  }
+
+  .m3-chip-button .state {
+    opacity: 0.75;
+    font-weight: 500;
+  }
+`;
