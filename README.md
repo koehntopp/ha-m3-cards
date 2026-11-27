@@ -11,6 +11,7 @@ Each card lives in its own folder with its own docs, screenshots and source.
 | [M3 Slim Battery Card](#m3-slim-battery-card) | [`ha-m3-slim-battery-card/`](ha-m3-slim-battery-card/) | `custom:m3-slim-battery-card` |
 | [M3 Slim Open Windows Card](#m3-slim-open-windows-card) | [`ha-m3-slim-open-windows/`](ha-m3-slim-open-windows/) | `custom:m3-slim-open-windows-card` |
 | [M3 Slim Temperature Card](#m3-slim-temperature-card) | [`ha-m3-slim-temperature-card/`](ha-m3-slim-temperature-card/) | `custom:m3-slim-temperature-card` |
+| [M3 Slim Lights Card](#m3-slim-lights-card) | [`ha-m3-slim-lights-card/`](ha-m3-slim-lights-card/) | `custom:m3-slim-lights-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
@@ -52,7 +53,7 @@ repositories as resources, remove them: the cards would be defined twice.
 ```
 
 It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
-Node 20+) and appends the energy, trash, battery, open-windows and temperature cards (plain JS, no build).
+Node 20+) and appends the energy, trash, battery, open-windows, temperature and lights cards (plain JS, no build).
 Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
@@ -220,6 +221,28 @@ entities:
 ```
 
 All options: [`ha-m3-slim-temperature-card/README.md`](ha-m3-slim-temperature-card/README.md).
+
+## M3 Slim Lights Card
+
+One to four lights in one row: tap toggles, drag sideways dims.
+
+![Lights card](ha-m3-slim-lights-card/docs/card.png)
+
+- Tiles as tall as the energy card's; the fill behind each tile shows the
+  brightness and follows a sideways drag.
+- Long press opens the more-info dialog; switches toggle too.
+- On: yellow, or the light's own colour.
+
+```yaml
+type: custom:m3-slim-lights-card
+entities:
+  - light.led_leiste
+  - light.licht_az
+  - entity: switch.steckdose_8
+    name: Aqualicht AZ
+```
+
+All options: [`ha-m3-slim-lights-card/README.md`](ha-m3-slim-lights-card/README.md).
 
 ## History
 
