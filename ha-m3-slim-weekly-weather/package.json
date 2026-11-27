@@ -1,5 +1,5 @@
 {
-  "name": "m3-weather-card-week",
+  "name": "ha-m3-slim-weekly-weather",
   "version": "1.0.0",
   "description": "A Material 3 weekly forecast card for Home Assistant — one row per day, or the whole week in one row.",
   "type": "module",
@@ -21,11 +21,11 @@
   "author": "Frank Köhntopp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/koehntopp/m3-weather-card-week.git"
+    "url": "https://github.com/koehntopp/ha-m3-cards.git"
   },
-  "homepage": "https://github.com/koehntopp/m3-weather-card-week",
+  "homepage": "https://github.com/koehntopp/ha-m3-cards",
   "bugs": {
-    "url": "https://github.com/koehntopp/m3-weather-card-week/issues"
+    "url": "https://github.com/koehntopp/ha-m3-cards/issues"
   },
   "dependencies": {
     "lit": "^3.2.1"

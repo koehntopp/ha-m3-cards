@@ -1,4 +1,4 @@
-# M3 Weather Card Week
+# M3 Slim Weekly Weather
 
 A Material 3 weekly forecast card for Home Assistant — the week at a glance,
 one row per day or all seven days in a single row.

@@ -5,8 +5,8 @@ Each card lives in its own folder with its own docs, screenshots and source.
 
 | Card | Folder | Type |
 |---|---|---|
-| [M3 Weather Card Week](#m3-weather-card-week) | [`m3-weather-card-week/`](m3-weather-card-week/) | `custom:m3-weather-card-week` |
-| [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3energy/`](ha-m3energy/) | `custom:m3-slim-energy-card` |
+| [M3 Slim Weekly Weather](#m3-slim-weekly-weather) | [`ha-m3-slim-weekly-weather/`](ha-m3-slim-weekly-weather/) | `custom:m3-weather-card-week` |
+| [M3 Slim Energy Card](#m3-slim-energy-card) | [`ha-m3-slim-energy-card/`](ha-m3-slim-energy-card/) | `custom:m3-slim-energy-card` |
 
 All cards ship in one file, `ha-m3-cards.js`: one install, one dashboard
 resource.
@@ -47,21 +47,21 @@ repositories as resources, remove them: the cards would be defined twice.
 ./scripts/build.sh    # → dist/ha-m3-cards.js
 ```
 
-It builds the weather card (`m3-weather-card-week/`, TypeScript + Lit, needs
-Node 20+) and appends the energy card (`ha-m3energy/m3-slim-energy-card.js`,
+It builds the weather card (`ha-m3-slim-weekly-weather/`, TypeScript + Lit, needs
+Node 20+) and appends the energy card (`ha-m3-slim-energy-card/m3-slim-energy-card.js`,
 plain JS). Publishing a GitHub release runs the same script and attaches the
 file to the release.
 
-## M3 Weather Card Week
+## M3 Slim Weekly Weather
 
 The whole week in one row: weekday, condition, rain chance, high and low per
 day, with today highlighted (`layout: row`).
 
-![Weather card, one row](m3-weather-card-week/docs/images/weather-card-week-row.png)
+![Weather card, one row](ha-m3-slim-weekly-weather/docs/images/weather-card-week-row.png)
 
 Or one row per day, with a bar from the day's low to its high (`layout: list`):
 
-![Weather card, list layout](m3-weather-card-week/docs/images/weather-card-week.png)
+![Weather card, list layout](ha-m3-slim-weekly-weather/docs/images/weather-card-week.png)
 
 - Bars share one scale across the week and are coloured by temperature (blue
   at 0 °C to red from 30 °C).
@@ -84,14 +84,14 @@ sensors:                     # optional
 ```
 
 Full options, colours and development notes:
-[`m3-weather-card-week/README.md`](m3-weather-card-week/README.md).
+[`ha-m3-slim-weekly-weather/README.md`](ha-m3-slim-weekly-weather/README.md).
 
 ## M3 Slim Energy Card
 
 A compact energy overview: solar, battery, grid, home, heat pump, EV or any
 other power sensor, as tiles (three per row) or as one row per device.
 
-![Energy card, tiles](ha-m3energy/docs/card.png)
+![Energy card, tiles](ha-m3-slim-energy-card/docs/card.png)
 
 - Live power in kW per device, coloured by direction: green producing or
   exporting, red consuming or charging. Configurable and invertible per device.
@@ -121,13 +121,13 @@ entities:
 ```
 
 All device options and migration notes from `slim-energy-card`:
-[`ha-m3energy/README.md`](ha-m3energy/README.md).
+[`ha-m3-slim-energy-card/README.md`](ha-m3-slim-energy-card/README.md).
 
 ## History
 
 The folders were imported with `git subtree` from the former repositories
 `koehntopp/m3-weather-card-week` and `koehntopp/ha-m3energy`; their commit
-history is preserved here.
+history is preserved here (folders since renamed to `ha-m3-slim-weekly-weather` and `ha-m3-slim-energy-card`).
 
 ## License
 

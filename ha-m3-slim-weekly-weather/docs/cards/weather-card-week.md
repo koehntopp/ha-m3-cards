@@ -1,5 +1,5 @@
 ---
-title: M3 Weather Card Week
+title: M3 Slim Weekly Weather
 type: m3-weather-card-week
 category: climate
 display: Weather Week

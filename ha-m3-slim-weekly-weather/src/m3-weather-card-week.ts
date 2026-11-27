@@ -974,7 +974,7 @@ const windowWithCards = window as unknown as {
 windowWithCards.customCards = windowWithCards.customCards || [];
 windowWithCards.customCards.push({
   type: "m3-weather-card-week",
-  name: "M3 Weather Card Week",
+  name: "M3 Slim Weekly Weather",
   description:
     "A weekly forecast, one row per day: condition, rain chance, temperature range and a week summary.",
   preview: true,
