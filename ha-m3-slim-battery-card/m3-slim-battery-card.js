@@ -84,9 +84,12 @@ class M3SlimBatteryCard extends HTMLElement {
 
   _low() {
     const states = this._hass.states;
-    // entity IDs, `*` matches any run of characters (sensor.pixel_*)
-    const exclude = (this._config.exclude ?? []).map((p) =>
-      new RegExp(`^${String(p).trim().replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`));
+    // entity IDs, `*` matches any run of characters (sensor.pixel_*); without
+    // a domain a pattern matches the part after it (pixel_*)
+    const exclude = (this._config.exclude ?? []).map((p) => {
+      const re = new RegExp(`^${String(p).trim().replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`);
+      return String(p).includes(".") ? (id) => re.test(id) : (id) => re.test(id.slice(id.indexOf(".") + 1));
+    });
     const ids = this._config.entities?.length
       ? this._config.entities
       : Object.keys(states).filter((id) => {
@@ -98,7 +101,7 @@ class M3SlimBatteryCard extends HTMLElement {
     for (const id of ids) {
       const st = states[id];
       const level = Number(st?.state);
-      if (exclude.some((re) => re.test(id)) || !st || st.state === "" || !Number.isFinite(level) || level >= threshold) continue;
+      if (exclude.some((match) => match(id)) || !st || st.state === "" || !Number.isFinite(level) || level >= threshold) continue;
       out.push({ id, level: Math.round(level), name: this._name(id, st) });
     }
     return out.sort((a, b) => a.level - b.level).slice(0, Math.max(1, this._num("count", 5)));
@@ -157,11 +160,15 @@ class M3SlimBatteryCardEditor extends HTMLElement {
         critical: "Red at or below (%)",
         count: "Batteries in the row",
         entities: "Only these batteries (empty: all with device class battery)",
-        exclude: "Never show (in YAML, * is a wildcard: sensor.pixel_*)",
+        exclude: "Never show",
+        exclude_patterns: "Never show, by pattern (* is a wildcard: sensor.pixel_*, evcc*)",
         hide_when_ok: "Hide the card when no battery is low",
       })[s.name] ?? s.name;
       this._form.addEventListener("value-changed", (ev) => {
-        const config = { ...this._config, ...ev.detail.value };
+        // the form shows exact entities and wildcard patterns apart; the config keeps one list
+        const { exclude_patterns: patterns = [], ...v } = ev.detail.value;
+        const config = { ...this._config, ...v,
+          exclude: [...(v.exclude ?? []), ...patterns.map((p) => String(p).trim()).filter(Boolean)] };
         for (const k of Object.keys(config)) {
           if (config[k] === "" || config[k] === undefined || (Array.isArray(config[k]) && !config[k].length)) delete config[k];
         }
@@ -178,9 +185,13 @@ class M3SlimBatteryCardEditor extends HTMLElement {
       { name: "count", selector: { number: { min: 1, max: 8, step: 1, mode: "box" } } },
       { name: "entities", selector: battery },
       { name: "exclude", selector: battery },
+      { name: "exclude_patterns", selector: { text: { multiple: true } } },
       { name: "hide_when_ok", selector: { boolean: {} } },
     ];
-    this._form.data = { threshold: 30, critical: 15, count: 5, hide_when_ok: false, ...this._config };
+    const exclude = this._config.exclude ?? [];
+    this._form.data = { threshold: 30, critical: 15, count: 5, hide_when_ok: false, ...this._config,
+      exclude: exclude.filter((p) => !String(p).includes("*")),
+      exclude_patterns: exclude.filter((p) => String(p).includes("*")) };
   }
 }
 

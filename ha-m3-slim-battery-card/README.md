@@ -40,7 +40,7 @@ exclude:
 | `critical` | `15` | Red at or below this level (%) |
 | `count` | `5` | Most batteries in the row |
 | `entities` | all | Only these battery sensors |
-| `exclude` | none | Battery sensors never shown (phones, cars); `*` is a wildcard, e.g. `sensor.pixel_*` (YAML only, the visual editor picks single entities) |
+| `exclude` | none | Battery sensors never shown (phones, cars). `*` is a wildcard: `sensor.pixel_*`; without a domain, `evcc*`, a pattern matches the part after `sensor.`. The visual editor has a separate field for patterns |
 | `hide_when_ok` | `false` | Hide the card when no battery is below the threshold |
 
 `preview.html` shows the card with made-up batteries
