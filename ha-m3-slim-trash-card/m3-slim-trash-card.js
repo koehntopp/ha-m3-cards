@@ -141,7 +141,22 @@ class M3SlimTrashCard extends HTMLElement {
     const out = [];
     for (const e of this._entities()) {
       const st = this._hass?.states[e.entity];
-      const days = st ? daysFromState(st.state) : undefined;
+      if (!st) continue;
+      // Waste Collection Schedule "upcoming" sensor: one attribute per date,
+      // its value the bins of that day ("Restmüll, Gelber Sack").
+      const dated = Object.entries(st.attributes).filter(([k]) => /^\d{4}-\d{2}-\d{2}$/.test(k));
+      if (dated.length) {
+        for (const [date, types] of dated) {
+          const days = daysFromState(date);
+          if (days < 0) continue;
+          for (const name of String(types).split(/\s*,\s*/).filter(Boolean)) {
+            const rule = RULES.find(([re]) => re.test(name));
+            out.push({ entity: e.entity, name, days, icon: rule?.[1] ?? DEFAULT_ICON, color: rule?.[2] ?? DEFAULT_COLOR });
+          }
+        }
+        continue;
+      }
+      const days = daysFromState(st.state);
       if (days === undefined || days < 0) continue;
       const name = this._name(e, st);
       const rule = RULES.find(([re]) => re.test(name)) ?? RULES.find(([re]) => re.test(e.entity));
@@ -243,7 +258,7 @@ class M3SlimTrashCardEditor extends HTMLElement {
     if (!this._form) {
       this._form = document.createElement("ha-form");
       this._form.computeLabel = (s) => ({
-        entities: "Bins (sensors: days until collection, or the date)",
+        entities: "Bins (sensors: days until collection, the date, or a Waste Collection Schedule \"upcoming\" sensor)",
         title: "Hero label (default: Next collection)",
         hero_primary: "Leading line",
         hero_icon: "Icons on a shared day",

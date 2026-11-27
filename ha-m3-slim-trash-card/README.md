@@ -15,7 +15,9 @@ no reminder mode.
   Collections beyond the span are left out instead of piling up at the end.
 - **Sensors**: state is the number of days until collection (e.g. Waste
   Collection Schedule with `value_template: '{{ value.daysTo }}'`) or the date
-  itself (`2026-12-03` or a timestamp).
+  itself (`2026-12-03` or a timestamp). A Waste Collection Schedule sensor
+  with `details_format: upcoming` works on its own: one entity covers all
+  bins, read from its date attributes (`2026-12-16: Restmüll, Gelber Sack`).
 - Names lose the device name in front (often the street address). Icon and
   colour come from the name: paper, bio, residual, recycling/yellow bag,
   glass, bulky waste, in German, English, French and Dutch; any bin can set
