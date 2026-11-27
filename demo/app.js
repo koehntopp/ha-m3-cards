@@ -139,6 +139,7 @@ function views() {
       [t("Today", "Heute"), [
         { type: "custom:m3-clock-card", style: "tiles", show_date: true },
         { type: "custom:m3-weather-card", entity: "weather.home", sensors: ["sensor.outdoor_temperature", "sensor.outdoor_humidity"] },
+        { type: "custom:m3-weather-card-week", entity: "weather.home" },
         { type: "custom:m3-presence-card", auto_discover: true },
       ]],
       [t("At a glance", "Auf einen Blick"), [

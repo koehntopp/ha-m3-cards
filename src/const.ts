@@ -10,7 +10,7 @@ import {
   LEVEL_TRACK_RADIUS,
 } from "./shared/level-slider";
 
-export const CARD_VERSION = "2.11.0";
+export const CARD_VERSION = "2.13.0";
 
 export const DEFAULT_CLIMATE_RADIUS = RADIUS.cardHero;
 export const DEFAULT_MINI_RADIUS = RADIUS.card;
@@ -764,6 +764,16 @@ export const WEATHER_DAILY_COLLAPSED_COUNT = 3;
 export const WEATHER_DAYS_TOGGLE_HEIGHT = HEIGHT.toggle;
 export const WEATHER_DAYS_TOGGLE_RADIUS = RADIUS.row;
 export const WEATHER_DAYS_TOGGLE_RADIUS_OPEN = 14;
+
+// ---- Weather card: week -------------------------------------------------------
+export const DEFAULT_WEATHER_WEEK_DAYS = 7;
+export const WEATHER_WEEK_ROW_HEIGHT = HEIGHT.rowStandard;
+export const WEATHER_WEEK_ROW_RADIUS = RADIUS.row;
+export const WEATHER_WEEK_ROW_GAP = SPACING.rowGap;
+/** Below this card width the date under the weekday and the wind column go. */
+export const WEATHER_WEEK_NARROW_WIDTH = 300;
+/** From this rain chance on, a day counts as wet in the week summary. */
+export const WEATHER_WEEK_WET_DAY_PERCENT = 50;
 
 // ---- Presence card ------------------------------------------------------------
 export const DEFAULT_PRESENCE_RADIUS = RADIUS.card;

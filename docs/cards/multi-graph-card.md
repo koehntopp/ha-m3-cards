@@ -4,7 +4,7 @@ type: m3-multi-graph-card
 category: climate
 display: Multi Graph
 summary: Several sensors of one kind as one graph — temperature, humidity, CO₂, power … — one in focus, the rest faint behind it, with a timeline you can scrub
-table_order: 4
+table_order: 5
 section_order: 51
 ---
 

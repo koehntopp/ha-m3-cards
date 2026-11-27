@@ -1523,6 +1523,56 @@ export interface M3WeatherCardConfig extends DetailModeConfig {
   card_version?: string;
 }
 
+export interface M3WeatherCardWeekConfig extends DetailModeConfig {
+  type: string;
+  entity: string;
+  name?: string;
+  /** Days shown, 1–14. Default 7. */
+  days?: number;
+  /**
+   * `list` (default): one row per day, with the date, rain chance, wind and a
+   * temperature-range bar. `row`: the days side by side in one row, compact
+   * enough for a week at a glance on a phone.
+   */
+  layout?: "list" | "row";
+  /** The date under each weekday. Default true. */
+  show_date?: boolean;
+  /** Rain chance per day. Default true; hidden entirely if the integration has none. */
+  show_precipitation?: boolean;
+  /** Wind speed per day. Default false; hidden entirely if the integration has none. */
+  show_wind?: boolean;
+  /**
+   * The average-high/low and precipitation strip under the list. Default
+   * false: those figures can already be read off the days themselves.
+   */
+  show_summary?: boolean;
+  /** Tints today's row and marks the current temperature on its bar. Default true. */
+  highlight_today?: boolean;
+  /** Decimal places of the temperatures, 0–2. Default 0. */
+  decimals?: number;
+  /**
+   * Own sensors instead of the forecast's figures, e.g. a weather station next
+   * door. `temperature` is the current reading that marks "now" on today's
+   * bar; `high` and `low` are the two numbers in the card's top right (the
+   * week's high/low by default). A sensor that is unavailable falls back to
+   * the forecast's value, so one wrong reading never blanks the card.
+   */
+  sensors?: Partial<Record<"temperature" | "high" | "low", string>>;
+  /** Tap on the header. Default: more-info on the weather entity. */
+  tap_action?: HaActionConfig;
+  accent_color?: string;
+  accent_opacity?: number;
+  precipitation_color?: string;
+  text_color?: string;
+  secondary_text_color?: string;
+  card_background?: string;
+  animation?: "auto" | "on" | "off";
+  glass_background?: boolean;
+  radius?: number;
+  corners?: CornerRadiusConfig;
+  card_version?: string;
+}
+
 export type PresenceSortMode = "home_first" | "name";
 
 /**
@@ -2464,6 +2514,7 @@ export type M3CardConfig =
   | M3LightCardConfig
   | M3BatteryCardConfig
   | M3WeatherCardConfig
+  | M3WeatherCardWeekConfig
   | M3PresenceCardConfig
   | M3MediaCardConfig
   | M3ClimateOverviewCardConfig

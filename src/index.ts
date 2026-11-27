@@ -20,6 +20,7 @@ export * from "./m3-cost-card";
 export * from "./m3-light-card";
 export * from "./m3-battery-card";
 export * from "./m3-weather-card";
+export * from "./m3-weather-card-week";
 export * from "./m3-presence-card";
 export * from "./m3-media-card";
 export * from "./m3-climate-overview-card";

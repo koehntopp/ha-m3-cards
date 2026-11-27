@@ -54,6 +54,7 @@ import { TemplatedCard } from "./shared/templated-card";
 import { openEntityDetail } from "./shared/entity-detail";
 import { runHaAction, navigateTo, isActionable } from "./shared/actions";
 import { isMissingState } from "./shared/entity-actions";
+import { isDaytime, weatherIcon, type WeatherForecastItem } from "./shared/weather";
 
 console.info(
   `%c M3-WEATHER-CARD %c v${CARD_VERSION} `,
@@ -63,51 +64,6 @@ console.info(
 
 const EASING = unsafeCSS(STANDARD_EASING);
 let instanceCounter = 0;
-
-interface WeatherForecastItem {
-  datetime: string;
-  condition?: string;
-  temperature?: number;
-  templow?: number;
-  precipitation?: number;
-  precipitation_probability?: number;
-  wind_speed?: number;
-  humidity?: number;
-  is_daytime?: boolean;
-}
-
-const CONDITION_ICONS: Record<string, string> = {
-  "clear-night": "mdi:weather-night",
-  cloudy: "mdi:weather-cloudy",
-  exceptional: "mdi:alert-circle-outline",
-  fog: "mdi:weather-fog",
-  hail: "mdi:weather-hail",
-  lightning: "mdi:weather-lightning",
-  "lightning-rainy": "mdi:weather-lightning-rainy",
-  partlycloudy: "mdi:weather-partly-cloudy",
-  pouring: "mdi:weather-pouring",
-  rainy: "mdi:weather-rainy",
-  snowy: "mdi:weather-snowy",
-  "snowy-rainy": "mdi:weather-snowy-rainy",
-  sunny: "mdi:weather-sunny",
-  windy: "mdi:weather-windy",
-  "windy-variant": "mdi:weather-windy-variant",
-};
-
-// Conditions that visually only make sense in daylight get swapped for a
-// night-appropriate icon when the forecast hour/day falls outside daytime —
-// most weather integrations report "sunny"/"partlycloudy" around the clock
-// and rely on the dashboard to pick the night variant itself.
-const NIGHT_ICON_OVERRIDES: Record<string, string> = {
-  sunny: "mdi:weather-night",
-  partlycloudy: "mdi:weather-night-partly-cloudy",
-};
-
-function weatherIcon(condition: string | undefined, daytime: boolean): string {
-  if (!condition) return "mdi:weather-cloudy";
-  if (!daytime && NIGHT_ICON_OVERRIDES[condition]) return NIGHT_ICON_OVERRIDES[condition];
-  return CONDITION_ICONS[condition] ?? "mdi:weather-cloudy";
-}
 
 // Picks how many of the n hourly slots can actually fit at their minimum
 // width, then rounds that up to a "nice" stride (every 2nd/3rd/4th/6th/...
@@ -120,16 +76,6 @@ function displayStride(n: number, width: number, minSlotWidthPx: number): number
   if (maxEntries >= n) return 1;
   const rawStride = Math.ceil(n / maxEntries);
   return WEATHER_NICE_HOUR_STRIDES.find((s) => s >= rawStride) ?? rawStride;
-}
-
-// No per-location sunrise/sunset table is available without extra API
-// round-trips, so daytime is approximated from the hour of day. Close
-// enough for icon selection; `is_daytime` on the forecast item (provided by
-// most modern weather integrations) is preferred when present.
-function isDaytime(item: WeatherForecastItem): boolean {
-  if (typeof item.is_daytime === "boolean") return item.is_daytime;
-  const hour = new Date(item.datetime).getHours();
-  return hour >= 6 && hour < 20;
 }
 
 const CHIP_META: Record<

@@ -66,6 +66,7 @@ body:
         - Vehicle (m3-vehicle-card)
         - Waste (m3-waste-card)
         - Weather (m3-weather-card)
+        - Weather Week (m3-weather-card-week)
         - Not card-specific / other
     validations:
       required: true

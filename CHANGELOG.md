@@ -4,6 +4,23 @@ Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 Versionierung folgt [SemVer](https://semver.org/lang/de/).
 
+## [2.13.0] – 2026-11-27
+
+Fork release: upstream m3-cards plus the weather week card.
+
+### Added
+
+- **m3-weather-card-week.** The weekly counterpart to the weather card: one
+  row per day with the condition, the rain chance, a bar from that day's low to
+  its high and both figures, today tinted with a dot where the current
+  temperature sits. `layout: row` puts the whole week in a single row — one
+  column per day, scrolling sideways rather than squeezing when there are more
+  days than fit — for about a third of the height. Optional `sensors` replace
+  the figures in the header (the week's high and low) and the current reading
+  behind the "now" dot with your own station's, falling back to the forecast
+  while a sensor is unavailable. The week summary strip (averages, total
+  precipitation) is off by default; `show_summary: true` brings it back.
+
 ## [Unreleased]
 
 ### Added

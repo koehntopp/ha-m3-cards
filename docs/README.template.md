@@ -6,12 +6,19 @@
 > Configuration options may still change between versions — please file an
 > issue if you run into something.
 
+> **This repository is a fork of
+> [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards)** with one addition:
+> [`m3-weather-card-week`](#m3-weather-card-week) — the week at a glance, one
+> row per day or all seven days in a single row, with optional sensors of your
+> own for the figures in the header. Everything else is upstream, unchanged;
+> the cards themselves still credit their author.
+
 Material 3–inspired, native Lovelace cards for Home Assistant — built with
 TypeScript + [Lit](https://lit.dev), **without** any dependency on
 `button-card`, `card-mod`, `mod-card`, or `stack-in-card`. A single bundle
 (`m3-cards.js`) registers **{{CARD_COUNT}} cards**, all sharing one design language.
 
-**Try it live:** [every card on a made-up home](https://j0sp0r.github.io/m3-cards/), with
+**Try it live:** [every card on a made-up home](https://koehntopp.github.io/m3-cards/), with
 simulated values, scenarios and a phone view, in the browser. Nothing to install,
 nothing connected, and every card's YAML a click away.
 
@@ -36,7 +43,7 @@ Rules — these come first:
   if nothing fits it.
 - Use only card types and options from the card docs. Every card has one file,
   for example custom:m3-room-card is
-  https://raw.githubusercontent.com/j0sp0r/m3-cards/main/docs/cards/room-card.md
+  https://raw.githubusercontent.com/koehntopp/m3-cards/main/docs/cards/room-card.md
   (the type without "m3-"). Read only the files of the cards you use; the README
   holds all of them and is too long to read whole.
 - Show me the plan (views, the cards on each, and any question you have) and
@@ -53,9 +60,10 @@ How to build it:
 1. Check that M3 Cards is installed as a dashboard resource. If you can't check,
    say how to install it through HACS in one line.
 2. Use the sections layout. Views, each only if I have something for it:
-   - Home: m3-clock-card, m3-weather-card, m3-presence-card,
-     m3-lights-overview-card, and an m3-chip-buttons-card with a few lights,
-     plugs or scenes you pick (name them in the plan so I can swap them).
+   - Home: m3-clock-card, m3-weather-card, m3-weather-card-week,
+     m3-presence-card, m3-lights-overview-card, and an
+     m3-chip-buttons-card with a few lights, plugs or scenes you pick (name
+     them in the plan so I can swap them).
    - Rooms: one m3-room-card per area (`area:` with the area id); it finds the
      area's devices by itself.
    - Climate: m3-climate-card per thermostat (if one shows up twice, for
@@ -186,35 +194,20 @@ the image — everything else is live data.</sub>
 
 ### HACS (recommended)
 
-[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=j0sp0r&repository=m3-cards&category=plugin)
+[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=koehntopp&repository=m3-cards&category=plugin)
 
-M3 Cards is in the **default HACS store**, so there is nothing to add first:
-
-1. Open HACS in Home Assistant
-2. Search for **M3 Cards**
-3. Open it and press *Download*
-4. Reload Home Assistant
-
-The button above does the same thing without the search — it opens the
-repository straight in your own Home Assistant.
-
-<details>
-<summary>Not showing up in the search yet?</summary>
-
-HACS refreshes its copy of the store list periodically rather than on every
-open, so a recently added repository can take a few hours to appear. Until it
-does, it can still be added by hand:
+This fork is **not** in the default HACS store, so add it once as a custom
+repository:
 
 1. HACS → menu (⋮) in the top right → *Custom repositories*
-2. Enter the repository URL, pick type **Dashboard**, then *Add*
-   (**not** *Integration* — this is a Lovelace card, not an integration)
+2. Enter `https://github.com/koehntopp/m3-cards`, pick type **Dashboard**, then
+   *Add* (**not** *Integration* — this is a Lovelace card, not an integration)
 3. Search for "M3 Cards", open it and press *Download*
 4. Reload Home Assistant
 
-Adding it this way is harmless once it does appear: HACS treats it as the same
-repository either way.
-
-</details>
+The button above does the same thing without the search — it opens the
+repository straight in your own Home Assistant. For the upstream project, use
+[its HACS entry](https://github.com/j0sp0r/m3-cards#installation) instead.
 
 ### Manual
 

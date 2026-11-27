@@ -6,12 +6,19 @@
 > Configuration options may still change between versions — please file an
 > issue if you run into something.
 
+> **This repository is a fork of
+> [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards)** with one addition:
+> [`m3-weather-card-week`](#m3-weather-card-week) — the week at a glance, one
+> row per day or all seven days in a single row, with optional sensors of your
+> own for the figures in the header. Everything else is upstream, unchanged;
+> the cards themselves still credit their author.
+
 Material 3–inspired, native Lovelace cards for Home Assistant — built with
 TypeScript + [Lit](https://lit.dev), **without** any dependency on
 `button-card`, `card-mod`, `mod-card`, or `stack-in-card`. A single bundle
-(`m3-cards.js`) registers **59 cards**, all sharing one design language.
+(`m3-cards.js`) registers **60 cards**, all sharing one design language.
 
-**Try it live:** [every card on a made-up home](https://j0sp0r.github.io/m3-cards/), with
+**Try it live:** [every card on a made-up home](https://koehntopp.github.io/m3-cards/), with
 simulated values, scenarios and a phone view, in the browser. Nothing to install,
 nothing connected, and every card's YAML a click away.
 
@@ -36,7 +43,7 @@ Rules — these come first:
   if nothing fits it.
 - Use only card types and options from the card docs. Every card has one file,
   for example custom:m3-room-card is
-  https://raw.githubusercontent.com/j0sp0r/m3-cards/main/docs/cards/room-card.md
+  https://raw.githubusercontent.com/koehntopp/m3-cards/main/docs/cards/room-card.md
   (the type without "m3-"). Read only the files of the cards you use; the README
   holds all of them and is too long to read whole.
 - Show me the plan (views, the cards on each, and any question you have) and
@@ -53,9 +60,10 @@ How to build it:
 1. Check that M3 Cards is installed as a dashboard resource. If you can't check,
    say how to install it through HACS in one line.
 2. Use the sections layout. Views, each only if I have something for it:
-   - Home: m3-clock-card, m3-weather-card, m3-presence-card,
-     m3-lights-overview-card, and an m3-chip-buttons-card with a few lights,
-     plugs or scenes you pick (name them in the plan so I can swap them).
+   - Home: m3-clock-card, m3-weather-card, m3-weather-card-week,
+     m3-presence-card, m3-lights-overview-card, and an
+     m3-chip-buttons-card with a few lights, plugs or scenes you pick (name
+     them in the plan so I can swap them).
    - Rooms: one m3-room-card per area (`area:` with the area id); it finds the
      area's devices by itself.
    - Climate: m3-climate-card per thermostat (if one shows up twice, for
@@ -165,6 +173,7 @@ card links to its full documentation further down.
 | [Climate Mini](#m3-climate-card-mini) | `m3-climate-card-mini` | Compact climate variant for narrow layouts |
 | [Climate Overview](#m3-climate-overview-card) | `m3-climate-overview-card` | Room-by-room temperature/humidity, grouped by area |
 | [Weather](#m3-weather-card) | `m3-weather-card` | Temperature curve, precipitation bars, sun markers |
+| [Weather Week](#m3-weather-card-week) | `m3-weather-card-week` | A week at a glance — one row per day with rain chance, a temperature-range bar and a week summary |
 | [Multi Graph](#m3-multi-graph-card) | `m3-multi-graph-card` | Several sensors of one kind as one graph — temperature, humidity, CO₂, power … — one in focus, the rest faint behind it, with a timeline you can scrub |
 
 ### 💡 Light, media & control
@@ -278,35 +287,20 @@ the image — everything else is live data.</sub>
 
 ### HACS (recommended)
 
-[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=j0sp0r&repository=m3-cards&category=plugin)
+[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=koehntopp&repository=m3-cards&category=plugin)
 
-M3 Cards is in the **default HACS store**, so there is nothing to add first:
-
-1. Open HACS in Home Assistant
-2. Search for **M3 Cards**
-3. Open it and press *Download*
-4. Reload Home Assistant
-
-The button above does the same thing without the search — it opens the
-repository straight in your own Home Assistant.
-
-<details>
-<summary>Not showing up in the search yet?</summary>
-
-HACS refreshes its copy of the store list periodically rather than on every
-open, so a recently added repository can take a few hours to appear. Until it
-does, it can still be added by hand:
+This fork is **not** in the default HACS store, so add it once as a custom
+repository:
 
 1. HACS → menu (⋮) in the top right → *Custom repositories*
-2. Enter the repository URL, pick type **Dashboard**, then *Add*
-   (**not** *Integration* — this is a Lovelace card, not an integration)
+2. Enter `https://github.com/koehntopp/m3-cards`, pick type **Dashboard**, then
+   *Add* (**not** *Integration* — this is a Lovelace card, not an integration)
 3. Search for "M3 Cards", open it and press *Download*
 4. Reload Home Assistant
 
-Adding it this way is harmless once it does appear: HACS treats it as the same
-repository either way.
-
-</details>
+The button above does the same thing without the search — it opens the
+repository straight in your own Home Assistant. For the upstream project, use
+[its HACS entry](https://github.com/j0sp0r/m3-cards#installation) instead.
 
 ### Manual
 
@@ -2423,6 +2417,100 @@ person_actions:
 | `text_color` / `secondary_text_color` | string | theme default | Names vs. status line |
 | `card_background` | string | glass/solid background | Card background |
 | `animation` | `auto` \| `on` \| `off` | `auto` | Status-change animation; `auto`/`on` respect `prefers-reduced-motion` |
+| `glass_background` | boolean | `true` | Frosted glass background |
+| `radius` / `corners` | number / object | `28` | Corner radius, optional per corner |
+
+</details>
+
+## M3 Weather Card Week
+
+The weekly counterpart to the weather card: one row per day, each with the
+condition, the rain chance, a bar running from that day's low to its high and
+both figures. Today's row is tinted and carries a dot where the current
+temperature sits inside its range. Under the list, a summary strip averages
+the highs and lows and totals the week's precipitation.
+
+<img src="docs/images/weather-card-week.png" alt="Weather Card Week" width="440">
+
+<details>
+<summary>Configuration, examples & options</summary>
+
+```yaml
+type: custom:m3-weather-card-week
+entity: weather.forecast_home
+```
+
+### Where the data comes from
+
+Like the weather card, this one reads the `daily` forecast through
+`weather.get_forecasts` and refreshes it every 15 minutes — it does not
+generate weather data of its own. How many days the integration delivers is
+up to the integration: Met.no, for example, delivers 6 days max, so asking
+for 7 shows 6. If the entity provides no daily forecast at all, the card says
+so instead of drawing an empty list.
+
+Each day's bar is drawn on the week's shared scale, so the rows line up and
+the whole week can be read at a glance. Its colour is the temperature itself,
+on the same fixed outdoor scale as the weather card: blue up to 0 °C, green
+around 17 °C, red from 30 °C.
+
+With `layout: row` the same week sits in a single row instead — one column
+per day with the weekday, condition, rain chance, high and low. That is the
+shape a phone's weather app uses, and it costs about a third of the height.
+The columns keep a minimum width: if the card is too narrow or `days` is
+larger than fits, the strip scrolls sideways instead of squeezing the days
+into unreadable slivers. On a narrow card the rain chance is the first thing
+to go.
+
+<img src="docs/images/weather-card-week-row.png" alt="Weather Card Week, one row" width="440">
+
+```yaml
+type: custom:m3-weather-card-week
+entity: weather.forecast_home
+layout: row
+```
+
+### Your own sensors
+
+The forecast says 17°, your station says 15.4° — the two figures in the card's
+top right come from the forecast by default. `sensors` takes your own instead.
+`high` and `low` replace those two numbers; `temperature` replaces the reading
+that marks "now" on today's bar. Each one falls back to the forecast's value
+while its sensor is unavailable, so a dead battery never blanks the header.
+Sensors are shown as they read — pick ones in the same unit as the weather
+entity, since the header prints degrees without converting.
+
+```yaml
+type: custom:m3-weather-card-week
+entity: weather.home
+sensors:
+  temperature: sensor.garden_temperature
+  high: sensor.garden_temp_max
+  low: sensor.garden_temp_min
+```
+
+### Configuration options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `entity` | string | – (required) | `weather` entity |
+| `name` | string | entity's friendly name | Header title |
+| `days` | number | `7` | Days shown, 1–14 (limited by what the integration delivers) |
+| `layout` | `list` \| `row` | `list` | `list`: one row per day, with the date, rain chance and a temperature bar. `row`: the days side by side in one row for a week at a glance — columns keep a minimum width, and the strip scrolls sideways rather than squeezing more days in than fit |
+| `show_date` | boolean | `true` | The date under each weekday |
+| `show_precipitation` | boolean | `true` | Rain chance per day; hidden entirely when the integration has none |
+| `show_wind` | boolean | `false` | Wind speed per day; hidden entirely when the integration has none |
+| `show_summary` | boolean | `false` | Adds the average-high/low and precipitation strip under the week. Off by default — those figures can be read off the days themselves |
+| `highlight_today` | boolean | `true` | Tints today's row and marks the current temperature on its bar |
+| `decimals` | number | `0` | Decimal places of the temperatures, 0–2 |
+| `sensors` | object | – | Own sensors instead of the forecast's figures: `temperature` is the current reading that marks "now" on today's bar, `high` and `low` are the two numbers in the top right. An unavailable sensor falls back to the forecast's value |
+| `tap_action` | action | `more-info` | Tap on the header |
+| `accent_color` | string | solar yellow; `primary` on a card added from the card picker | Today's tint, the icon well and the "now" dot |
+| `accent_opacity` | number | `18` | Strength of that tint, 0–100 |
+| `precipitation_color` | string | `#6ba7dc` | The rain-chance column |
+| `text_color` / `secondary_text_color` | string | theme default | Temperatures/day names vs. dates and secondary values |
+| `card_background` | string | glass/solid background | Card background |
+| `animation` | `auto` \| `on` \| `off` | `auto` | Rows fade in one after another; `auto`/`on` respect `prefers-reduced-motion` |
 | `glass_background` | boolean | `true` | Frosted glass background |
 | `radius` / `corners` | number / object | `28` | Corner radius, optional per corner |
 
