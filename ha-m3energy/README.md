@@ -2,14 +2,14 @@
 
 A Material 3 take on a compact Home Assistant energy overview: solar, battery, grid, home, heat pump, EV charger, or anything else with a power sensor. Same numbers as before, in the shape of [j0sp0r/m3-cards](https://github.com/j0sp0r/m3-cards): 28px card radius, frosted surface, squircle icon wells, tinted fill bars and the m3 palette.
 
-<img src="https://raw.githubusercontent.com/koehntopp/ha-m3energy/main/docs/card.png" alt="M3 Slim Energy Card, tiles" width="55%">
+<img src="docs/card.png" alt="M3 Slim Energy Card, tiles" width="55%">
 
 Two layouts:
 
 - **tiles** (default) — three per row, for a narrow dashboard slot. Below ~380px the grid falls back to two per row.
 - **rows** — one device per line, in the shape of the m3 power-list card. Taller, but the numbers get room.
 
-<img src="https://raw.githubusercontent.com/koehntopp/ha-m3energy/main/docs/card-rows.png" alt="M3 Slim Energy Card, rows" width="55%">
+<img src="docs/card-rows.png" alt="M3 Slim Energy Card, rows" width="55%">
 
 ## Features
 - One tile or row per device: an icon well in the source colour, live power in kW, and state of charge / daily energy / grid price as a second line.
@@ -23,14 +23,12 @@ Two layouts:
 - No dependencies, one JS file, no build.
 
 ## Install
-1. HACS → ⋮ → Custom repositories → `https://github.com/koehntopp/ha-m3energy`, type *Dashboard* → Download.
-2. If it isn't added automatically: Settings → Dashboards → Resources → `/hacsfiles/ha-m3energy/m3-slim-energy-card.js`, type *JavaScript module*.
-3. Reload the browser, then add the card *M3 Slim Energy Card*.
+See [Installation](../README.md#installation) in the repository README.
 
 ## Configuration
 Use the visual editor, or YAML.
 
-<img src="https://raw.githubusercontent.com/koehntopp/ha-m3energy/main/docs/editor.png" alt="Editor" width="55%">
+<img src="docs/editor.png" alt="Editor" width="55%">
 
 ```yaml
 type: custom:m3-slim-energy-card

@@ -23,33 +23,9 @@ one row per day or all seven days in a single row.
 - Frosted-glass or solid surface, accent colours, corner radius and the
   Material motion the rest of the M3 suite uses.
 
-**Try it live:** [the card over a made-up week](https://koehntopp.github.io/m3-weather-card-week/) —
-two layouts, two themes, three languages, nothing connected.
-
 ## Installation
 
-### HACS (recommended)
-
-[![Open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=koehntopp&repository=m3-weather-card-week&category=plugin)
-
-This repository is not in the default HACS store, so add it once as a custom
-repository:
-
-1. HACS → menu (⋮) in the top right → *Custom repositories*
-2. Enter `https://github.com/koehntopp/m3-weather-card-week`, pick type
-   **Dashboard**, then *Add* (**not** *Integration* — this is a Lovelace card,
-   not an integration)
-3. Search for "M3 Weather Card Week", open it and press *Download*
-4. Reload Home Assistant
-
-### Manual
-
-1. Download `m3-cards.js` from the [latest release](../../releases/latest)
-2. Copy it to `config/www/m3-cards.js`
-3. Add the resource in Home Assistant:
-   *Settings → Dashboards → Resources → Add resource*, URL `/local/m3-cards.js`,
-   type *JavaScript module*
-4. Reload the dashboard
+See [Installation](../README.md#installation) in the repository README.
 
 ## Usage
 
