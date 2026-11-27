@@ -54,8 +54,12 @@ file to the release.
 
 ## M3 Weather Card Week
 
-The week at a glance: one row per day with condition, rain chance, a bar from
-the day's low to its high and the date, or all days side by side in one row.
+The whole week in one row: weekday, condition, rain chance, high and low per
+day, with today highlighted (`layout: row`).
+
+![Weather card, one row](m3-weather-card-week/docs/images/weather-card-week-row.png)
+
+Or one row per day, with a bar from the day's low to its high (`layout: list`):
 
 ![Weather card, list layout](m3-weather-card-week/docs/images/weather-card-week.png)
 
@@ -71,7 +75,7 @@ the day's low to its high and the date, or all days side by side in one row.
 ```yaml
 type: custom:m3-weather-card-week
 entity: weather.forecast_home
-layout: list                 # list | row
+layout: row                  # row | list
 days: 7
 sensors:                     # optional
   temperature: sensor.garden_temperature

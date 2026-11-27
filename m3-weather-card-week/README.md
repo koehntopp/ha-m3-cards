@@ -3,12 +3,12 @@
 A Material 3 weekly forecast card for Home Assistant — the week at a glance,
 one row per day or all seven days in a single row.
 
-![The card in list layout](docs/images/weather-card-week.png)
+![The card in row layout: the whole week in one row](docs/images/weather-card-week-row.png)
 
 <details open>
-<summary>One row per day or the whole week in one row</summary>
+<summary>One row per day</summary>
 
-![The card in row layout](docs/images/weather-card-week-row.png)
+![The card in list layout](docs/images/weather-card-week.png)
 
 </details>
 
