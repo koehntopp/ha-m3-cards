@@ -1553,11 +1553,13 @@ export interface M3WeatherCardWeekConfig extends DetailModeConfig {
   /**
    * Own sensors instead of the forecast's figures, e.g. a weather station next
    * door. `temperature` is the current reading that marks "now" on today's
-   * bar; `high` and `low` are the two numbers in the card's top right (the
-   * week's high/low by default). A sensor that is unavailable falls back to
+   * bar; with `temperature` or `humidity` set, the header's top right shows
+   * the current temperature and humidity, the week's high/low below them.
+   * `high` and `low` replace those two numbers (the week's high/low by
+   * default). A sensor that is unavailable falls back to
    * the forecast's value, so one wrong reading never blanks the card.
    */
-  sensors?: Partial<Record<"temperature" | "high" | "low", string>>;
+  sensors?: Partial<Record<"temperature" | "humidity" | "high" | "low", string>>;
   /** Tap on the header. Default: more-info on the weather entity. */
   tap_action?: HaActionConfig;
   accent_color?: string;

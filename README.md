@@ -67,8 +67,9 @@ Or one row per day, with a bar from the day's low to its high (`layout: list`):
   at 0 °C to red from 30 °C).
 - Today is tinted; a dot on its bar marks the current temperature.
 - `layout: row` compresses the week into one strip for phone dashboards.
-- Own sensors (e.g. a weather station) can replace the header high/low and the
-  current temperature; the forecast fills in while they are unavailable.
+- Own sensors (e.g. a weather station): current temperature and humidity in
+  the header, own high/low; the weather entity fills in while they are
+  unavailable.
 - Reads the `daily` forecast via `weather.get_forecasts` from any `weather.*`
   entity (Met.no works without an API key), refreshed every 15 minutes.
 
@@ -79,6 +80,7 @@ layout: row                  # row | list
 days: 7
 sensors:                     # optional
   temperature: sensor.garden_temperature
+  humidity: sensor.garden_humidity
   high: sensor.garden_temp_max
   low: sensor.garden_temp_min
 ```

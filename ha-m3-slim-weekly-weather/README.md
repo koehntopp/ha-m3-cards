@@ -18,8 +18,8 @@ one row per day or all seven days in a single row.
   sits inside the day's range.
 - **`layout: row`** compresses the week into a strip of columns — a third of
   the height, for a phone dashboard.
-- **Your own sensors** can replace the two figures in the header and the
-  current reading behind the dot, e.g. from a weather station next door.
+- **Your own sensors**, e.g. a weather station next door: current
+  temperature and humidity in the header, and your own high/low.
 - Frosted-glass or solid surface, accent colours, corner radius and the
   Material motion the rest of the M3 suite uses.
 
@@ -62,17 +62,21 @@ narrow card the rain chance is the first thing to go.
 
 ### Your own sensors
 
-The forecast says 17°, your station says 15.4° — the two figures in the card's
-top right come from the forecast by default. `sensors` takes your own instead.
-`high` and `low` replace those two numbers; `temperature` replaces the reading
-that marks "now" on today's bar. Each one falls back to the forecast's value
-while its sensor is unavailable, so a dead battery never blanks the header.
+The forecast says 17°, your station says 15.4°. By default the card's top
+right shows the week's high and low from the forecast; `sensors` takes your
+own readings instead. With `temperature` or `humidity` set, the top right
+leads with the current temperature and humidity, and the high/low move to a
+smaller line below. `temperature` also marks "now" on today's bar; `high` and
+`low` replace the two high/low numbers. Each one falls back to the weather
+entity's value while its sensor is unavailable, so a dead battery never
+blanks the header.
 
 ```yaml
 type: custom:m3-weather-card-week
 entity: weather.home
 sensors:
   temperature: sensor.garden_temperature
+  humidity: sensor.garden_humidity
   high: sensor.garden_temp_max
   low: sensor.garden_temp_min
 ```
@@ -94,7 +98,7 @@ entity, since the header prints degrees without converting.
 | `show_summary` | boolean | `false` | Adds the average-high/low and precipitation strip under the week |
 | `highlight_today` | boolean | `true` | Tints today's row/column and marks the current temperature |
 | `decimals` | number | `0` | Decimal places of the temperatures, 0–2 |
-| `sensors` | object | – | Own sensors: `temperature`, `high`, `low` |
+| `sensors` | object | – | Own sensors: `temperature`, `humidity`, `high`, `low` |
 | `tap_action` | action | `more-info` | Tap on the header |
 | `accent_color` | string | solar yellow | Today's tint, the icon well and the "now" dot |
 | `accent_opacity` | number | `18` | Strength of that tint, 0–100 |

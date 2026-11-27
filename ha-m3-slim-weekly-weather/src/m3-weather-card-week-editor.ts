@@ -73,6 +73,7 @@ export class M3WeatherCardWeekEditor extends LitElement implements LovelaceCardE
     const sensor = { entity: { domain: "sensor" } };
     return [
       { name: "temperature", selector: sensor },
+      { name: "humidity", selector: sensor },
       { name: "high", selector: sensor },
       { name: "low", selector: sensor },
     ];
@@ -81,6 +82,7 @@ export class M3WeatherCardWeekEditor extends LitElement implements LovelaceCardE
   private _sensorLabel = (schema: SchemaEntry): string => {
     const map: Record<string, TranslationKey> = {
       temperature: "editor_weather_week_sensor_temperature",
+      humidity: "editor_weather_week_sensor_humidity",
       high: "editor_weather_week_sensor_high",
       low: "editor_weather_week_sensor_low",
     };

@@ -1,6 +1,6 @@
 {
   "name": "ha-m3-slim-weekly-weather",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Material 3 weekly forecast card for Home Assistant — one row per day, or the whole week in one row.",
   "type": "module",
   "scripts": {

@@ -996,7 +996,8 @@ const defaultTranslations = {
     editor_weather_week_layout: "Layout",
     editor_weather_week_layout_list: "Eine Zeile pro Tag",
     editor_weather_week_layout_row: "Die nächsten 7 Tage in einer Zeile",
-    editor_weather_week_sensor_temperature: "Aktuelle Temperatur (Jetzt-Markierung)",
+    editor_weather_week_sensor_temperature: "Aktuelle Temperatur (oben rechts, Jetzt-Markierung)",
+    editor_weather_week_sensor_humidity: "Luftfeuchtigkeit (oben rechts)",
     editor_weather_week_sensor_high: "Höchstwert oben rechts",
     editor_weather_week_sensor_low: "Tiefstwert oben rechts",
     editor_weather_week_sensors_hint:
@@ -4570,7 +4571,8 @@ const defaultTranslations = {
     editor_weather_week_layout: "Layout",
     editor_weather_week_layout_list: "One row per day",
     editor_weather_week_layout_row: "The next 7 days in one row",
-    editor_weather_week_sensor_temperature: "Current temperature (now marker)",
+    editor_weather_week_sensor_temperature: "Current temperature (header, now marker)",
+    editor_weather_week_sensor_humidity: "Humidity (header)",
     editor_weather_week_sensor_high: "High in the header",
     editor_weather_week_sensor_low: "Low in the header",
     editor_weather_week_sensors_hint:

@@ -56,11 +56,14 @@ layout: row
 
 ### Your own sensors
 
-The forecast says 17°, your station says 15.4° — the two figures in the card's
-top right come from the forecast by default. `sensors` takes your own instead.
-`high` and `low` replace those two numbers; `temperature` replaces the reading
-that marks "now" on today's bar. Each one falls back to the forecast's value
-while its sensor is unavailable, so a dead battery never blanks the header.
+The forecast says 17°, your station says 15.4°. By default the card's top
+right shows the week's high and low from the forecast; `sensors` takes your
+own readings instead. With `temperature` or `humidity` set, the top right
+leads with the current temperature and humidity, and the high/low move to a
+smaller line below. `temperature` also marks "now" on today's bar; `high` and
+`low` replace the two high/low numbers. Each one falls back to the weather
+entity's value while its sensor is unavailable, so a dead battery never
+blanks the header.
 Sensors are shown as they read — pick ones in the same unit as the weather
 entity, since the header prints degrees without converting.
 
@@ -69,6 +72,7 @@ type: custom:m3-weather-card-week
 entity: weather.home
 sensors:
   temperature: sensor.garden_temperature
+  humidity: sensor.garden_humidity
   high: sensor.garden_temp_max
   low: sensor.garden_temp_min
 ```
@@ -87,7 +91,7 @@ sensors:
 | `show_summary` | boolean | `false` | Adds the average-high/low and precipitation strip under the week. Off by default — those figures can be read off the days themselves |
 | `highlight_today` | boolean | `true` | Tints today's row and marks the current temperature on its bar |
 | `decimals` | number | `0` | Decimal places of the temperatures, 0–2 |
-| `sensors` | object | – | Own sensors instead of the forecast's figures: `temperature` is the current reading that marks "now" on today's bar, `high` and `low` are the two numbers in the top right. An unavailable sensor falls back to the forecast's value |
+| `sensors` | object | – | Own sensors instead of the forecast's figures: `temperature` and `humidity` show in the top right (and `temperature` marks "now" on today's bar), `high` and `low` replace the week's high/low. An unavailable sensor falls back to the forecast's value |
 | `tap_action` | action | `more-info` | Tap on the header |
 | `accent_color` | string | solar yellow; `primary` on a card added from the card picker | Today's tint, the icon well and the "now" dot |
 | `accent_opacity` | number | `18` | Strength of that tint, 0–100 |

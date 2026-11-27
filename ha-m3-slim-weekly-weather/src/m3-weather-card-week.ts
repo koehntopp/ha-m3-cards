@@ -84,7 +84,10 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
   }
 
   protected shouldUpdate(changed: PropertyValues): boolean {
-    return hassChangeMatters(changed, this.hass, [this._config?.entity]);
+    return hassChangeMatters(changed, this.hass, [
+      this._config?.entity,
+      ...Object.values(this._config?.sensors ?? {}),
+    ]);
   }
 
   public setConfig(config: M3WeatherCardWeekConfig): void {
@@ -278,6 +281,53 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
 
     const headerHigh = this._sensorNumber("high") ?? scale?.max;
     const headerLow = this._sensorNumber("low") ?? scale?.min;
+    // With an own temperature or humidity sensor the header leads with the
+    // current reading; the week's high/low move to a smaller second line.
+    const sensors = this._config.sensors ?? {};
+    const showNow = !!(sensors.temperature || sensors.humidity);
+    const nowTemp = showNow ? scale?.nowTemp : undefined;
+    const rawHumidity = attrs.humidity;
+    const nowHumidity = showNow
+      ? (this._sensorNumber("humidity") ??
+        (typeof rawHumidity === "number" && Number.isFinite(rawHumidity) ? rawHumidity : undefined))
+      : undefined;
+    const rangeHtml =
+      headerHigh !== undefined || headerLow !== undefined
+        ? html`
+            <div
+              class="header-range"
+              aria-label=${`${headerHigh !== undefined ? `${this._formatNumber(headerHigh)}°` : ""}${
+                headerHigh !== undefined && headerLow !== undefined ? " / " : ""
+              }${headerLow !== undefined ? `${this._formatNumber(headerLow)}°` : ""}`}
+            >
+              ${headerHigh !== undefined
+                ? html`<span class="range-high">${this._formatNumber(headerHigh)}°</span>`
+                : nothing}
+              ${headerHigh !== undefined && headerLow !== undefined ? html`<span class="range-sep">/</span>` : nothing}
+              ${headerLow !== undefined
+                ? html`<span class="range-low">${this._formatNumber(headerLow)}°</span>`
+                : nothing}
+            </div>
+          `
+        : undefined;
+    const headerRight =
+      showNow && (nowTemp !== undefined || nowHumidity !== undefined)
+        ? html`
+            <div class="header-now-block">
+              <div class="header-now">
+                ${nowTemp !== undefined
+                  ? html`<span class="now-temp">${this._formatNumber(nowTemp)}°</span>`
+                  : nothing}
+                ${nowHumidity !== undefined
+                  ? html`<span class="now-humidity"
+                      ><ha-icon icon="mdi:water-percent"></ha-icon>${Math.round(nowHumidity)} %</span
+                    >`
+                  : nothing}
+              </div>
+              ${rangeHtml ?? nothing}
+            </div>
+          `
+        : rangeHtml;
 
     return html`
       <ha-card style=${`${cssVars} border-radius: ${radius};`}>
@@ -290,27 +340,7 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
             name,
             subtitle: this._subtitle(items),
             onClick: isActionable(this._tapAction) ? () => this._onHeaderTap() : undefined,
-            right:
-              headerHigh !== undefined || headerLow !== undefined
-                ? html`
-                    <div
-                      class="header-range"
-                      aria-label=${`${headerHigh !== undefined ? `${this._formatNumber(headerHigh)}°` : ""}${
-                        headerHigh !== undefined && headerLow !== undefined ? " / " : ""
-                      }${headerLow !== undefined ? `${this._formatNumber(headerLow)}°` : ""}`}
-                    >
-                      ${headerHigh !== undefined
-                        ? html`<span class="range-high">${this._formatNumber(headerHigh)}°</span>`
-                        : nothing}
-                      ${headerHigh !== undefined && headerLow !== undefined
-                        ? html`<span class="range-sep">/</span>`
-                        : nothing}
-                      ${headerLow !== undefined
-                        ? html`<span class="range-low">${this._formatNumber(headerLow)}°</span>`
-                        : nothing}
-                    </div>
-                  `
-                : undefined,
+            right: headerRight,
           })}
 
           ${this._daily === undefined
@@ -349,7 +379,7 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
    * is missing, or it has no reading right now — the forecast's value is used
    * then, so an unavailable sensor never blanks a figure.
    */
-  private _sensorNumber(key: "temperature" | "high" | "low"): number | undefined {
+  private _sensorNumber(key: "temperature" | "humidity" | "high" | "low"): number | undefined {
     const id = this._config?.sensors?.[key];
     if (!id) return undefined;
     const st = this.hass?.states[id];
@@ -567,6 +597,45 @@ export class M3WeatherCardWeek extends TemplatedCard(LitElement) implements Love
         align-items: baseline;
         gap: 4px;
         white-space: nowrap;
+      }
+
+      .header-now-block {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+
+      .header-now-block .range-high {
+        font-size: 15px;
+      }
+
+      .header-now {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .now-temp {
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--m3p-text);
+      }
+
+      .now-humidity {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--wk-precip);
+      }
+
+      .now-humidity ha-icon {
+        --mdc-icon-size: 14px;
       }
 
       .range-high {

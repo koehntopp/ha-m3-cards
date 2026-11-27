@@ -61,6 +61,11 @@ const hass = {
       state: "10.2",
       attributes: { friendly_name: "Garden", unit_of_measurement: "°C" },
     },
+    "sensor.garden_humidity": {
+      entity_id: "sensor.garden_humidity",
+      state: "64",
+      attributes: { friendly_name: "Garden humidity", unit_of_measurement: "%" },
+    },
     "sensor.garden_max": {
       entity_id: "sensor.garden_max",
       state: "15.4",
@@ -95,6 +100,7 @@ document.querySelector("#row").appendChild(
     layout: "row",
     sensors: {
       temperature: "sensor.garden_temperature",
+      humidity: "sensor.garden_humidity",
       high: "sensor.garden_max",
       low: "sensor.garden_min",
     },

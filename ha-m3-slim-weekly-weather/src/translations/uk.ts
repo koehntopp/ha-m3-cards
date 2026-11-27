@@ -941,7 +941,8 @@ const uk: CustomTranslations = {
   editor_weather_week_layout: "Макет",
   editor_weather_week_layout_list: "Рядок на кожен день",
   editor_weather_week_layout_row: "Наступні 7 днів в одному рядку",
-  editor_weather_week_sensor_temperature: "Поточна температура (позначка «зараз»)",
+  editor_weather_week_sensor_temperature: "Поточна температура (заголовок, позначка «зараз»)",
+  editor_weather_week_sensor_humidity: "Вологість (заголовок)",
   editor_weather_week_sensor_high: "Максимум у заголовку",
   editor_weather_week_sensor_low: "Мінімум у заголовку",
   editor_weather_week_sensors_hint:
