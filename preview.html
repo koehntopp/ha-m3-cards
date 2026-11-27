@@ -1,0 +1,130 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: Roboto, sans-serif; color: #e9edf2; min-height: 100vh;
+         background:
+           radial-gradient(60% 50% at 12% 0%, #1d3557 0%, transparent 62%),
+           radial-gradient(48% 42% at 92% 12%, #123f3a 0%, transparent 62%),
+           radial-gradient(70% 60% at 62% 102%, #2a1e3f 0%, transparent 66%),
+           #0a1018;
+         --primary-text-color: #e9edf2; --card-background-color: #16233a;
+         --divider-color: rgba(160, 180, 210, .16); --secondary-text-color: #9fb0c4;
+         --primary-color: #4aa3ff; --warning-color: #ffa600; }
+  ha-card { display: block; }
+  ha-icon { display: inline-flex; font-size: 20px; }
+  h4 { margin: 24px 0 8px; color: var(--secondary-text-color); font-weight: 400; }
+  .cols { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+  .col { width: 400px; }
+  #sec-tiles h4, #sec-rows h4, #sec-editor h4 { margin-top: 0; }
+  ha-form { display: block; }
+  ha-form label { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; font-size: 14px; }
+  ha-form input[type=text], ha-form select { background: #16263d; color: inherit; border: 1px solid var(--divider-color); border-radius: 4px; padding: 2px 6px; width: 55%; }
+  .hlp { font-size: 12px; color: var(--secondary-text-color); margin: -2px 0 6px; }
+  pre { font-size: 12px; color: var(--secondary-text-color); }
+</style>
+
+<div class="cols">
+  <div class="col">
+    <section id="sec-tiles">
+      <h4>Tiles (default)</h4>
+      <m3-slim-energy-card id="tiles"></m3-slim-energy-card>
+    </section>
+    <section id="sec-rows">
+      <h4>Rows (layout: rows)</h4>
+      <m3-slim-energy-card id="rows"></m3-slim-energy-card>
+    </section>
+  </div>
+  <div class="col">
+    <section id="sec-editor">
+      <h4>Editor (ha-form mocked here; real HA renders native selectors)</h4>
+      <div id="editor"><m3-slim-energy-card-editor></m3-slim-energy-card-editor></div>
+      <pre id="yaml"></pre>
+    </section>
+  </div>
+</div>
+
+<script>
+  // minimal ha-form mock: checkbox for booleans, text input otherwise
+  // ha-icon mock: MDI webfont (HA ships its own)
+  customElements.define("ha-icon", class extends HTMLElement {
+    connectedCallback() {
+      const r = this.getRootNode(); // webfont CSS does not cross into the card's shadow root
+      if (r !== document && !r.querySelector("link[data-mdi]")) {
+        const l = document.createElement("link");
+        l.rel = "stylesheet"; l.href = document.querySelector("link").href; l.setAttribute("data-mdi", "");
+        r.prepend(l);
+      }
+      this.innerHTML = `<i class="mdi mdi-${this.getAttribute("icon").slice(4)}"></i>`; }
+  });
+  customElements.define("ha-form", class extends HTMLElement {
+    connectedCallback() {
+      this.innerHTML = "";
+      for (const s of this.schema) {
+        const k = Object.keys(s.selector)[0];
+        const l = document.createElement("label");
+        l.append(this.computeLabel(s));
+        let i;
+        if (k === "boolean") { i = document.createElement("input"); i.type = "checkbox"; i.checked = !!this.data[s.name]; }
+        else if (k === "select") {
+          i = document.createElement("select");
+          for (const o of s.selector.select.options) i.add(new Option(o.label, o.value));
+          i.value = this.data[s.name] ?? "";
+        } else { i = document.createElement("input"); i.type = "text"; i.value = this.data[s.name] ?? ""; i.placeholder = s.selector.icon?.placeholder ?? ""; }
+        i.addEventListener("change", () => {
+          const value = { ...this.data, [s.name]: k === "boolean" ? i.checked : i.value };
+          this.data = value;
+          this.dispatchEvent(new CustomEvent("value-changed", { detail: { value } }));
+        });
+        l.append(i);
+        this.append(l);
+        if (s.helper) { const m = document.createElement("div"); m.className = "hlp"; m.textContent = s.helper; this.append(m); }
+      }
+    }
+  });
+</script>
+<script src="m3-slim-energy-card.js"></script>
+<script>
+  const st = (state, unit) => ({ state: String(state), attributes: { unit_of_measurement: unit } });
+  const hass = { states: {
+    "sensor.solar": st(4930, "W"), "sensor.solar_day": st(21.4, "kWh"), "sensor.solar2": st(2.0, "kW"), "sensor.solar2_day": st(10, "kWh"),
+    "sensor.bat": st(830, "W"), "sensor.soc": st(92, "%"), "sensor.bat_day": st(8.4, "kWh"),
+    "sensor.grid": st(-0.01, "kW"), "sensor.grid_day": st(4.2), "sensor.price": st(0.28, "€/kWh"),
+    "sensor.house": st(6.09, "kW"), "sensor.house_day": st(28.7, "kWh"),
+    "sensor.heat": st(0.66, "kW"), "sensor.heat_day": st(9.3, "kWh"),
+    "sensor.car": st(6.11, "kW"),
+  } };
+  const config = {
+    title: "Energy",
+    entities: [
+      { entity: "sensor.solar", type: "solar", peak_kw: 10, entity_2: "sensor.solar2", daily_entity: "sensor.solar_day", daily_entity_2: "sensor.solar2_day" },
+      { entity: "sensor.bat", type: "battery", soc_entity: "sensor.soc", daily_entity: "sensor.bat_day" },
+      { entity: "sensor.grid", type: "grid", price_entity: "sensor.price", daily_entity: "sensor.grid_day" },
+      { entity: "sensor.house", type: "home", name: "Home", daily_entity: "sensor.house_day" },
+      { entity: "sensor.heat", type: "heatpump", daily_entity: "sensor.heat_day" },
+      { entity: "sensor.car", type: "ev" },
+    ],
+  };
+  const tiles = document.getElementById("tiles");
+  const rows = document.getElementById("rows");
+  const editor = document.querySelector("m3-slim-energy-card-editor");
+  const show = (c) => (document.getElementById("yaml").textContent = JSON.stringify(c, null, 1));
+  tiles.hass = hass; tiles.setConfig(config);
+  rows.hass = hass; rows.setConfig({ ...config, layout: "rows" });
+  editor.hass = hass; editor.setConfig(config);
+  show(config);
+  // ?only=card | ?only=rows | ?only=editor&open=2,3 (used for README screenshots)
+  const q = new URLSearchParams(location.search);
+  const only = q.get("only");
+  if (only) {
+    const want = { card: "tiles", rows: "rows", editor: "editor" }[only];
+    for (const k of ["tiles", "rows", "editor"]) document.getElementById(`sec-${k}`).hidden = k !== want;
+    document.querySelectorAll("h4, #yaml").forEach((h) => (h.hidden = true));
+    (q.get("open") || "").split(",").filter(Boolean).forEach((i) => (editor.querySelectorAll("details")[i].open = true));
+  }
+  editor.addEventListener("config-changed", (e) => {
+    tiles.setConfig(e.detail.config);
+    rows.setConfig({ ...e.detail.config, layout: "rows" });
+    show(e.detail.config);
+  });
+</script>
