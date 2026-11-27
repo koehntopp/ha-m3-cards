@@ -127,4 +127,4 @@ history is preserved here.
 
 ## License
 
-MIT — see the `LICENSE` file in each card's folder.
+MIT — see [`LICENSE`](LICENSE).
