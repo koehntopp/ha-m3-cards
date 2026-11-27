@@ -142,7 +142,7 @@ The next bin collection and a timeline of the coming two weeks.
   stacked, 7–28 days.
 - Sensors give days until collection or the date itself, or one Waste
   Collection Schedule sensor (`details_format: upcoming`) covers all bins.
-  Icons and colours follow the bin's name.
+  The hero shows a bin in the next pickup's colour, which follows the bin's name.
 
 ```yaml
 type: custom:m3-slim-trash-card

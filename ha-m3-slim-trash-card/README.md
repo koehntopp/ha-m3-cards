@@ -10,7 +10,9 @@ no reminder mode.
 - **Hero**: the next pickup's weekday (or the days, or the date), with the
   bin and how far off it is in the line above ("Next collection: Bio · in 6
   days"). Today and tomorrow are words. Several bins on the same day are
-  named together; `hero_icon: multi` overlaps their icons.
+  named together. The icon is a bin in the colour of the next pickup (green
+  bio, grey residual, yellow recycling, blue paper); `hero_icon: multi` shows
+  one per bin that day, overlapping.
 - **Timeline**: the hero's bottom line, one marker per bin over the next two
   weeks (7–28 days), with today, the middle and the end marked below.
   Bins on the same day stack, and a group at the end stays inside the track.
@@ -41,16 +43,15 @@ entities:
   - sensor.gelber_sack
   - entity: sensor.papier
     name: Paper
-    icon: mdi:package-variant
     color: "#6ba7dc"
 hero_primary: weekday     # weekday (default) | days | date
 ```
 
 | option | default | |
 |---|---|---|
-| `entities` | — | sensors: id, or `{ entity, name, icon, color }` |
+| `entities` | — | sensors: id, or `{ entity, name, color }` |
 | `hero_primary` | `weekday` | what leads: `weekday` ("Thursday"), `days` ("In 6 days"), `date` ("3 Dec"); the other goes underneath |
-| `hero_icon` | `first` | `first`: one icon; `multi`: all bins of that day, overlapping |
+| `hero_icon` | `first` | `first`: one bin icon in the next pickup's colour; `multi`: one per bin that day, overlapping |
 | `title` | "Next collection" | start of the line above the hero's main line |
 | `show_timeline` | `true` | `false` drops the timeline; the bin moves to its own line under the main line |
 | `timeline_days` | `14` | timeline span, 7–28 |

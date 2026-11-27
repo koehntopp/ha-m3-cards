@@ -1,19 +1,19 @@
 // M3 Slim Trash Card: the next bin collection plus a timeline of the coming
-// days. Design and the name→icon/colour rules follow the waste card of
+// days. Design and the name→colour rules follow the waste card of
 // j0sp0r/m3-cards (MIT); this is a standalone, dependency-free version of its
 // hero + timeline, without the per-bin list and the reminder mode.
 
 const DOT = 12; // px, timeline marker size
 const STACK = 8; // px, offset between markers on the same day
-const DEFAULT_ICON = "mdi:trash-can-outline";
+const HERO_ICON = "mdi:trash-can"; // one bin icon, in the colour of the next pickup
 const DEFAULT_COLOR = "#9fb0c0";
 const RULES = [
-  [/(alt)?papier|paper|karton|carton/i, "mdi:newspaper-variant-outline", "#6ba7dc"],
-  [/bio|organi|grüngut|gruengut|compost|gft|tuinafval/i, "mdi:leaf", "#81c784"],
-  [/rest(müll|muell|afval)?|general|r(e|é)sidu|schwarz|ménagers|menagers/i, "mdi:trash-can-outline", "#888780"],
-  [/wertstoff|gelb|plastik|plastic|verpackung|recycl|lvp|pmc/i, "mdi:recycle", "#f0c46e"],
-  [/glas|glass|verre/i, "mdi:bottle-soda-outline", "#7bc4b0"],
-  [/sperrm(ü|ue)ll|bulk|encombrant|grofvuil/i, "mdi:sofa-outline", "#b8946a"],
+  [/(alt)?papier|paper|karton|carton/i, "#6ba7dc"],
+  [/bio|organi|grüngut|gruengut|compost|gft|tuinafval/i, "#81c784"],
+  [/rest(müll|muell|afval)?|general|r(e|é)sidu|schwarz|ménagers|menagers/i, "#888780"],
+  [/wertstoff|gelb|plastik|plastic|verpackung|recycl|lvp|pmc/i, "#f0c46e"],
+  [/glas|glass|verre/i, "#7bc4b0"],
+  [/sperrm(ü|ue)ll|bulk|encombrant|grofvuil/i, "#b8946a"],
 ];
 
 const STRINGS = {
@@ -152,7 +152,7 @@ class M3SlimTrashCard extends HTMLElement {
           if (days < 0) continue;
           for (const name of String(types).split(/\s*,\s*/).filter(Boolean)) {
             const rule = RULES.find(([re]) => re.test(name));
-            out.push({ entity: e.entity, name, days, icon: rule?.[1] ?? DEFAULT_ICON, color: rule?.[2] ?? DEFAULT_COLOR });
+            out.push({ entity: e.entity, name, days, color: rule?.[1] ?? DEFAULT_COLOR });
           }
         }
         continue;
@@ -163,8 +163,7 @@ class M3SlimTrashCard extends HTMLElement {
       const rule = RULES.find(([re]) => re.test(name)) ?? RULES.find(([re]) => re.test(e.entity));
       out.push({
         entity: e.entity, name, days,
-        icon: e.icon ?? st.attributes.icon ?? rule?.[1] ?? DEFAULT_ICON,
-        color: e.color ?? rule?.[2] ?? DEFAULT_COLOR,
+        color: e.color ?? rule?.[1] ?? DEFAULT_COLOR,
       });
     }
     return out.sort((a, b) => a.days - b.days);
@@ -201,8 +200,8 @@ class M3SlimTrashCard extends HTMLElement {
       main = main.charAt(0).toUpperCase() + main.slice(1);
     }
     const icons = (this._config.hero_icon === "multi" ? sameDay.slice(0, 3) : sameDay.slice(0, 1))
-      .map((s) => `<div class="well" style="--c:${esc(s.color)}"><ha-icon icon="${esc(s.icon)}"></ha-icon></div>`)
-      .join("") || `<div class="well" style="--c:${DEFAULT_COLOR}"><ha-icon icon="${DEFAULT_ICON}"></ha-icon></div>`;
+      .map((s) => `<div class="well" style="--c:${esc(s.color)}"><ha-icon icon="${HERO_ICON}"></ha-icon></div>`)
+      .join("") || `<div class="well" style="--c:${DEFAULT_COLOR}"><ha-icon icon="${HERO_ICON}"></ha-icon></div>`;
 
     let timeline = "";
     if (this._config.show_timeline !== false) {
@@ -266,7 +265,7 @@ class M3SlimTrashCardEditor extends HTMLElement {
       })[s.name] ?? s.name;
       this._form.addEventListener("value-changed", (ev) => {
         const v = ev.detail.value;
-        // keep per-bin name/icon/colour set in YAML for bins still selected
+        // keep per-bin name/colour set in YAML for bins still selected
         const old = new Map((this._config.entities ?? []).map((e) => (typeof e === "string" ? [e, e] : [e.entity, e])));
         const config = { ...this._config, ...v, entities: (v.entities ?? []).map((id) => old.get(id) ?? id) };
         for (const k of Object.keys(config)) if (config[k] === "" || config[k] === undefined) delete config[k];
@@ -284,8 +283,8 @@ class M3SlimTrashCardEditor extends HTMLElement {
         { value: "date", label: "Date (4 Dec)" },
       ] } } },
       { name: "hero_icon", selector: { select: { mode: "dropdown", options: [
-        { value: "first", label: "First bin's icon" },
-        { value: "multi", label: "All bins, overlapping" },
+        { value: "first", label: "One bin, next pickup's colour" },
+        { value: "multi", label: "One bin per pickup that day, overlapping" },
       ] } } },
       { name: "title", selector: { text: {} } },
       { name: "show_timeline", selector: { boolean: {} } },
