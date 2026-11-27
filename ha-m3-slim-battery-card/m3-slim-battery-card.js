@@ -84,7 +84,9 @@ class M3SlimBatteryCard extends HTMLElement {
 
   _low() {
     const states = this._hass.states;
-    const exclude = new Set(this._config.exclude ?? []);
+    // entity IDs, `*` matches any run of characters (sensor.pixel_*)
+    const exclude = (this._config.exclude ?? []).map((p) =>
+      new RegExp(`^${String(p).trim().replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`));
     const ids = this._config.entities?.length
       ? this._config.entities
       : Object.keys(states).filter((id) => {
@@ -96,7 +98,7 @@ class M3SlimBatteryCard extends HTMLElement {
     for (const id of ids) {
       const st = states[id];
       const level = Number(st?.state);
-      if (exclude.has(id) || !st || st.state === "" || !Number.isFinite(level) || level >= threshold) continue;
+      if (exclude.some((re) => re.test(id)) || !st || st.state === "" || !Number.isFinite(level) || level >= threshold) continue;
       out.push({ id, level: Math.round(level), name: this._name(id, st) });
     }
     return out.sort((a, b) => a.level - b.level).slice(0, Math.max(1, this._num("count", 5)));
@@ -155,7 +157,7 @@ class M3SlimBatteryCardEditor extends HTMLElement {
         critical: "Red at or below (%)",
         count: "Batteries in the row",
         entities: "Only these batteries (empty: all with device class battery)",
-        exclude: "Never show",
+        exclude: "Never show (in YAML, * is a wildcard: sensor.pixel_*)",
         hide_when_ok: "Hide the card when no battery is low",
       })[s.name] ?? s.name;
       this._form.addEventListener("value-changed", (ev) => {

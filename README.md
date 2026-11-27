@@ -167,6 +167,8 @@ type: custom:m3-slim-battery-card
 threshold: 30
 critical: 15
 count: 5
+exclude:
+  - sensor.pixel_*           # wildcards allowed
 ```
 
 All options: [`ha-m3-slim-battery-card/README.md`](ha-m3-slim-battery-card/README.md).
