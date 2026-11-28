@@ -88,6 +88,7 @@ const CSS = `
   .sub { font-size: 10px; line-height: 1.25; opacity: .62; overflow: hidden;
          white-space: nowrap; text-overflow: ellipsis; }
   .rows .sub { font-size: 11px; }
+  .ti { --mdc-icon-size: 11px; font-size: 11px; display: inline-flex; vertical-align: -1px; margin-right: 1px; }
   .sub span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* a narrow slot can't hold three text columns: fall back to two per row */
   @container (max-width: 350px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -170,6 +171,10 @@ class M3SlimEnergyCard extends HTMLElement {
       const [p, ps] = this._num(priceId);
       if (!isNaN(p)) price = `${p.toFixed(2)} ${ps.attributes.unit_of_measurement || ""}`.trim();
     }
+    // heat pump: flow and hot water temperature, each with its icon, on one line
+    const temps = c.type === "heatpump" ? [[c.flow_temp_entity, "mdi:radiator"], [c.water_temp_entity, "mdi:water-boiler"]]
+      .map(([id, icon]) => { const [t] = this._num(id); return isNaN(t) ? "" : `<ha-icon class="ti" icon="${icon}"></ha-icon>${Math.round(t)}°`; })
+      .filter(Boolean).join(" ") : "";
     // fill: sun = share of peak, battery = state of charge, everything else = share of the biggest value
     let frac = 0;
     if (!isNaN(kw) && Math.abs(kw) > (c.threshold ?? 0.005) && maxAbs > 0) {
@@ -183,7 +188,7 @@ class M3SlimEnergyCard extends HTMLElement {
       name: c.name || T.label,
       fill: frac >= 0.25 ? `width:${(frac * 100).toFixed(1)}%;background:color-mix(in srgb,${T.color} 16%,transparent)` : "",
       // tiles have ~65px for text: one part per line; rows have room for one joined line
-      parts: [socText, daily, price].filter(Boolean),
+      parts: [socText, daily, price, temps].filter(Boolean),
     };
   }
 
@@ -244,7 +249,7 @@ class M3SlimEnergyCard extends HTMLElement {
       el.querySelectorAll(".u").forEach((n) => (n.textContent = d.u));
       if (rows) {
         el.querySelector(".nm").textContent = d.name;
-        el.querySelector(".sub").textContent = d.parts.join(" · ");
+        el.querySelector(".sub").innerHTML = d.parts.join(" · ");
       } else {
         el.querySelector(".sub").innerHTML = d.parts.map((l) => `<span>${l}</span>`).join("");
       }
@@ -270,7 +275,8 @@ const TYPE_OPTIONS = Object.entries(TYPES).map(([value, t]) => ({ value, label: 
 const LABELS = {
   enabled: "Show", type: "Type", name: "Name", entity: "Power entity", icon: "Icon",
   entity_2: "Second power entity (optional, added)", daily_entity_2: "Second daily energy entity (optional, added)", soc_entity: "Battery SoC entity", daily_entity: "Daily energy entity", peak_kw: "Peak capacity (kW), fills the tile green",
-  positive_color: "Colour when the value is above 0", invert: "Invert sign", price_entity: "Price entity",
+  positive_color: "Colour when the value is above 0", invert: "Invert sign", price_entity: "Price entity (per kWh)",
+  flow_temp_entity: "Heating circuit (flow) temperature", water_temp_entity: "Hot water temperature",
 };
 const bool = { boolean: {} };
 // fields depend on the device type: SoC only for batteries
@@ -283,6 +289,7 @@ const schemaFor = (type) => [
   { name: "icon", selector: { icon: { placeholder: typeIcon(TYPES[type]) } } }, // standard icon shown as placeholder
   ...(type === "battery" ? [{ name: "soc_entity", selector: ent({ device_class: "battery" }) }] : []),
   ...(type === "grid" ? [{ name: "price_entity", selector: ent() }] : []),
+  ...(type === "heatpump" ? ["flow_temp_entity", "water_temp_entity"].map((name) => ({ name, selector: ent({ device_class: "temperature" }) })) : []),
   { name: "daily_entity", selector: ent({ device_class: "energy" }) },
   ...(type === "solar" ? [{ name: "daily_entity_2", selector: ent({ device_class: "energy" }) }] : []),
   { name: "positive_color", selector: sel([{ value: "green", label: "Green" }, { value: "red", label: "Red" }]),
@@ -290,7 +297,7 @@ const schemaFor = (type) => [
   { name: "invert", selector: bool,
     helper: "Flip the sign first, for a sensor that reports the opposite direction (e.g. discharging as positive). Check the live value in the row header." },
 ];
-const MANAGED = ["enabled", "type", "name", "entity", "entity_2", "icon", "soc_entity", "price_entity", "daily_entity", "daily_entity_2", "peak_kw", "positive_color", "invert"];
+const MANAGED = ["enabled", "type", "name", "entity", "entity_2", "icon", "soc_entity", "price_entity", "flow_temp_entity", "water_temp_entity", "daily_entity", "daily_entity_2", "peak_kw", "positive_color", "invert"];
 
 class M3SlimEnergyCardEditor extends HTMLElement {
   _nk = 0;
@@ -423,7 +430,7 @@ class M3SlimEnergyCardEditor extends HTMLElement {
         const entities = this._config.entities.slice();
         const kept = { ...entities[i] };
         MANAGED.forEach((k) => delete kept[k]);
-        for (const k of ["name", "icon", "entity", "daily_entity", ...(v.type === "solar" ? ["entity_2", "daily_entity_2"] : []), ...(v.type === "battery" ? ["soc_entity"] : []), ...(v.type === "grid" ? ["price_entity"] : [])]) if (v[k] || k === "entity") n[k] = v[k] || "";
+        for (const k of ["name", "icon", "entity", "daily_entity", ...(v.type === "solar" ? ["entity_2", "daily_entity_2"] : []), ...(v.type === "battery" ? ["soc_entity"] : []), ...(v.type === "grid" ? ["price_entity"] : []), ...(v.type === "heatpump" ? ["flow_temp_entity", "water_temp_entity"] : [])]) if (v[k] || k === "entity") n[k] = v[k] || "";
         if (v.type && v.type !== "other") n.type = v.type;
         // a colour that was just the old type's default follows the new type
         const dflt = v.type !== type && v.positive_color === TYPES[type].positive ? TYPES[v.type].positive : v.positive_color;

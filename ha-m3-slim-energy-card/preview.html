@@ -91,7 +91,7 @@
     "sensor.bat": st(830, "W"), "sensor.soc": st(92, "%"), "sensor.bat_day": st(8.4, "kWh"),
     "sensor.grid": st(-0.01, "kW"), "sensor.grid_day": st(4.2), "sensor.price": st(0.28, "€/kWh"),
     "sensor.house": st(6.09, "kW"), "sensor.house_day": st(28.7, "kWh"),
-    "sensor.heat": st(0.66, "kW"), "sensor.heat_day": st(9.3, "kWh"),
+    "sensor.heat": st(0.66, "kW"), "sensor.heat_day": st(9.3, "kWh"), "sensor.flow": st(34.6, "°C"), "sensor.dhw": st(48.2, "°C"),
     "sensor.car": st(6.11, "kW"),
   } };
   const config = {
@@ -101,7 +101,7 @@
       { entity: "sensor.bat", type: "battery", soc_entity: "sensor.soc", daily_entity: "sensor.bat_day" },
       { entity: "sensor.grid", type: "grid", price_entity: "sensor.price", daily_entity: "sensor.grid_day" },
       { entity: "sensor.house", type: "home", name: "Home", daily_entity: "sensor.house_day" },
-      { entity: "sensor.heat", type: "heatpump", daily_entity: "sensor.heat_day" },
+      { entity: "sensor.heat", type: "heatpump", daily_entity: "sensor.heat_day", flow_temp_entity: "sensor.flow", water_temp_entity: "sensor.dhw" },
       { entity: "sensor.car", type: "ev" },
     ],
   };

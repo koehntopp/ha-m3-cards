@@ -102,7 +102,8 @@ other power sensor, as tiles (three per row) or as one row per device.
 
 - Live power in kW per device, coloured by direction: green producing or
   exporting, red consuming or charging. Configurable and invertible per device.
-- Second line with daily kWh, battery state of charge or grid price.
+- Second line with daily kWh, battery state of charge, grid price per kWh or
+  heat pump flow and hot water temperature.
 - Fill bar behind each tile: solar as share of `peak_kw`, battery as state of
   charge, everything else relative to the largest value on the card.
 - Header with title, source count, grid price and home consumption.
@@ -123,6 +124,10 @@ entities:
   - type: grid
     entity: sensor.grid_power
     price_entity: sensor.electricity_price
+  - type: heatpump
+    entity: sensor.heat_pump_power
+    flow_temp_entity: sensor.heat_pump_flow_temperature
+    water_temp_entity: sensor.hot_water_temperature
   - type: home
     entity: sensor.house_power
 ```

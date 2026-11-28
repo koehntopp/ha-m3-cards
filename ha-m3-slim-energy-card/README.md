@@ -62,7 +62,7 @@ entities:
     entity: sensor.car_charging_power
 ```
 
-Each device has a type. The type sets the default icon, the icon-well colour and the direction colour, and decides which fields are offered (battery: state of charge entity, grid: price entity, solar: second inverter and peak capacity).
+Each device has a type. The type sets the default icon, the icon-well colour and the direction colour, and decides which fields are offered (battery: state of charge entity, grid: price entity, heat pump: flow and hot water temperature, solar: second inverter and peak capacity).
 
 ### Device options
 | option | default | |
@@ -76,7 +76,9 @@ Each device has a type. The type sets the default icon, the icon-well colour and
 | `daily_entity_2` | — | solar only: second daily sensor, added |
 | `soc_entity` | — | battery: state of charge in %, fills the tile |
 | `peak_kw` | — | solar: peak capacity, fills the tile by output / peak |
-| `price_entity` | — | grid: price, shown after the daily energy |
+| `price_entity` | — | grid: current price per kWh, shown under the daily energy |
+| `flow_temp_entity` | — | heat pump: heating circuit (flow) temperature, with a radiator icon |
+| `water_temp_entity` | — | heat pump: hot water temperature, with a boiler icon |
 | `icon` | type icon | any `mdi:` icon, or an emoji via YAML |
 | `positive_color` | type default | `green` or `red` for a value above 0 |
 | `invert` | `false` | flip the sign first, for a sensor that reports the opposite direction |
