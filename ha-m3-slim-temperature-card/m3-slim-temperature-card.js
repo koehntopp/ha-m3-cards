@@ -44,7 +44,14 @@ const CSS = `
     background: var(--m3-surface); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
     color: var(--primary-text-color);
   }
+  ha-card { container-type: inline-size; }
   .row { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 6px; }
+  /* phone: less padding around and between the tiles, more room for the text */
+  @container (max-width: 420px) {
+    .card { padding: 8px; gap: 4px; }
+    .row { gap: 4px; }
+    .t { padding: 5px 6px; border-radius: 14px; }
+  }
   /* as tall as the energy card's tiles (68px): name, temperature and humidity. Text sizes follow the
      tile's width (cqi), so four tiles fit a phone; min-height lets the tile grow under the OS text zoom */
   .t { box-sizing: border-box; min-height: 68px; padding: 6px 8px; gap: 2px; border-radius: 18px; overflow: hidden;
@@ -64,6 +71,11 @@ const CSS = `
   .tr { --mdc-icon-size: 12px; font-size: 12px; opacity: .8; margin-left: 2px; align-self: center; display: inline-flex; }
   .hu { display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 500; line-height: 1.3; white-space: nowrap; }
   .hu ha-icon { --mdc-icon-size: 10px; font-size: 10px; display: inline-flex; }
+  /* narrow tile: drop the icons and the unit letter (° stays) before the text gets cut */
+  @container (max-width: 76px) {
+    .hd ha-icon, .hu ha-icon, .uc { display: none; }
+    .tr { margin-left: 0; }
+  }
 `;
 
 class M3SlimTemperatureCard extends HTMLElement {
@@ -199,7 +211,7 @@ class M3SlimTemperatureCard extends HTMLElement {
     const tile = (t) => `
       <div class="t${t.ok ? "" : " na"}" data-entity="${esc(t.entity)}" style="--c:${t.color}" title="${esc(t.name)}">
         <div class="hd"><ha-icon class="ink" icon="${esc(t.icon)}"></ha-icon><span class="nm">${esc(t.name)}</span></div>
-        <div class="tp ink"><span class="v">${esc(t.value)}</span>${t.ok ? `<span class="u">${esc(t.unit)}</span>` : ""}${
+        <div class="tp ink"><span class="v">${esc(t.value)}</span>${t.ok ? `<span class="u">${t.unit.startsWith("°") ? `°<span class="uc">${esc(t.unit.slice(1))}</span>` : esc(t.unit)}</span>` : ""}${
           t.trend ? `<ha-icon class="tr" icon="${t.trend}"></ha-icon>` : ""}</div>
         ${t.humidity ? `<div class="hu" data-entity="${esc(t.humidity.entity)}" style="${t.humidity.warn ? `color:${HUMIDITY_WARN}` : "opacity:.55"}">
           <ha-icon icon="mdi:water-outline"></ha-icon>${t.humidity.value} %</div>` : ""}
